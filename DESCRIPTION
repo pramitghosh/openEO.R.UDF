@@ -1,0 +1,17 @@
+Package: openeo.R.UDF
+Type: Package
+Title: Applies a User-Defined Function (UDF) on a stars object created from generic (GeoTIFF) files
+Version: 0.1.0
+Authors@R: person("Pramit", "Ghosh", email = "pramitghosh@uni-muenster.de", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1852-5951"))
+Maintainer: Pramit Ghosh <pramitghosh@uni-muenster.de>
+Description: Reads generic GeoTIFF files to a stars object, applies users' custom function on it, and writes the resultant files back to disk.
+    This package acts as a tool for users to parse the files written to disk by the OpenEO R backend so that their custom functions (UDFs) could be applied.
+License: Apache License
+Encoding: UTF-8
+LazyData: true
+Depends:
+  R (>= 3.4.4),
+  stars (>= 0.1-1)
+Imports:
+  utils
+RoxygenNote: 6.0.1
