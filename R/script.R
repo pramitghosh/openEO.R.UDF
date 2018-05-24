@@ -52,7 +52,7 @@ read_generics = function(legend_file)
 #'
 #' @param legend_name Name of the legend file as a string
 #' @param function_name Name of the User-Defined Function (UDF) the user defined in his own script
-#' @param drop_dim Numeric value (or vector) representing the dimension number of the dimension to be dropped. (1,2 = Space, 3 = Band, 4 = Time)
+#' @param drop_dim Numeric value (or vector) representing the dimension number of the dimension to be dropped. (1,2 = Space, 3 = Band, 4 = Time, 5 = Whether raster)
 #' @param out_dir Path of the directory where the resulting files are to be written to disk (a new directory will be created)
 #'
 #' @details The semantics of the written multi-band GeoTIFF depends on the argument `drop_dim`. If `drop_dim = 4`
@@ -62,13 +62,19 @@ read_generics = function(legend_file)
 #'
 run_UDF = function(legend_name, function_name, drop_dim, out_dir = "results")
 {
-  all_dims = 1:4 #For space (x,y), band (b) and time (t) for now
-  stars_obj = read_generics(legend_file = legend_name) #Need to keep check if legend file exists
+  all_dims = 1:5 #For space (x,y), band (b), time (t) and whether raster? (r; 1 = raster, 0 = vector, NA = neither) for now
+  if(file.exists(legend_name)) #Check if legend file exists
+    stars_obj = read_generics(legend_file = legend_name)
+  else
+    stop("Legend file is not accessible or does not exist!")
   #Need to keep check that drop_dim is consistent with the boolean typechecking framework suggested to Florian as
   #an extra layer of armour against inconsistent UDFs from the user
   result = st_apply(stars_obj, FUN = function_name, MARGIN = all_dims[-c(drop_dim)])
-  dir.create(out_dir) #Need to keep check the out_dir is a valid directory name
-  #Need to have separate write methods for resultant objects which have different dimensionality - say c(0,0,0,1) (a time-series only).
-  #Resultant dimensionality can be calculated from the dimensionality of the Collection and the UDF (as suggested to Florian)
-  st_write(obj = result, dsn = paste(out_dir, "out.tif", sep = "/"))
+  dir_create_status = dir.create(out_dir)
+  if(dir_create_status && dir.exists(out_dir)) #If new directory creation was successful
+  {
+    #Need to have separate write methods for resultant objects which have different dimensionality - say c(0,0,0,1) (a time-series only).
+    #Resultant dimensionality can be calculated from the dimensionality of the Collection and the UDF (as suggested to Florian)
+    st_write(obj = result, dsn = paste(out_dir, "out.tif", sep = "/"))
+  }
 }
