@@ -4,14 +4,17 @@
 \alias{run_UDF}
 \title{Run an UDF on a `stars` object}
 \usage{
-run_UDF(legend_name, function_name, drop_dim, out_dir = "results")
+run_UDF(legend_name, function_name, drop_dim, in_dim = c(1, 1, 1, 1, 1),
+  out_dir = "results")
 }
 \arguments{
 \item{legend_name}{Name of the legend file as a string}
 
 \item{function_name}{Name of the User-Defined Function (UDF) the user defined in his own script}
 
-\item{drop_dim}{Numeric value (or vector) representing the dimension number of the dimension to be dropped. (1,2 = Space, 3 = Band, 4 = Time)}
+\item{drop_dim}{Numeric value (or vector) representing the dimension number of the dimension to be dropped. (1,2 = Space, 3 = Band, 4 = Time, 5 = Whether raster)}
+
+\item{in_dim}{Dimensionality of the incoming Collection object (default: spatial multi-band, multi-temporal raster = c(1,1,1,1,1))}
 
 \item{out_dir}{Path of the directory where the resulting files are to be written to disk (a new directory will be created)}
 }
