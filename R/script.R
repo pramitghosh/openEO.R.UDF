@@ -6,10 +6,11 @@ read_legend = function(legend_file)
 read_generics = function(legend_file, dimensionality)
 {
   legend_df = read_legend(legend_file)
+  legend_dir = dirname(legend_file)
 
   if(dimensionality[5] == 1) #If raster
   {
-    file_list = as.character(legend_df$filename)
+    file_list = paste(legend_dir, as.character(legend_df$filename), sep = "/")
     time_list = as.POSIXct(unique(legend_df$timestamp))
     band_list = as.character(unique(legend_df$band))
 
@@ -17,14 +18,14 @@ read_generics = function(legend_file, dimensionality)
     num_files = dim(legend_df)[1]
     for(tifs in 1:num_files)
     {
-      time_cols[legend_df$band_index[tifs], legend_df$time_index[tifs]] = as.character(legend_df$filename[tifs])
+      time_cols[legend_df$band_index[tifs], legend_df$time_index[tifs]] = paste(legend_dir, as.character(legend_df$filename[tifs]), sep = "/")
     }
 
     stars_list = list()
     length(stars_list) = length(time_list)
     store_as_stars = function(ind_cols)
     {
-      t_i = read_stars(.x = ind_cols, along = "band")
+      t_i = read_stars(.x = ind_cols, along = "band", )
     }
 
     # Since a time duration is needed to calculate the delta for the time dimension,
@@ -54,6 +55,29 @@ read_generics = function(legend_file, dimensionality)
   stars_nD
 }
 
+create_out_legend = function(in_legend, new_dim)
+{
+  out_legend = read_legend(in_legend)
+  if(new_dim[1] || new_dim[2] == 0)
+  {
+    out_legend$xmin = NA
+    out_legend$xmax = NA
+    out_legend$ymin = NA
+    out_legend$ymax = NA
+  }
+  if(new_dim[3] == 0)
+  {
+    out_legend$band_index = NA
+    out_legend$band = NA
+  }
+  if(new_dim[4] == 0)
+  {
+    out_legend$time_index = NA
+    out_legend$time_stamp = NA
+  }
+  out_leged$whether_raster = new_dim[5] #whether_raster can be 1 (Raster), 0 (Vector) or NA (Neither)
+}
+
 #' @title Run an UDF on a `stars` object
 #'
 #' @description Reads generic files from disk by looking up a legend file, runs the User Defined Function (UDF) specified by the user and
@@ -72,19 +96,100 @@ read_generics = function(legend_file, dimensionality)
 #'
 run_UDF = function(legend_name, function_name, drop_dim, in_dim = c(1,1,1,1,1), out_dir = "results")
 {
-  all_dims = 1:5 #For space (x,y), band (b), time (t) and whether raster? (r; 1 = raster, 0 = vector, NA = neither) for now
+  #For space (x,y), band (b), time (t) and whether raster? (r; 1 = raster, 0 = vector, NA = neither) for now
+  all_dims = 1:4 #Keeping only x,y,b,t
   if(file.exists(legend_name)) #Check if legend file exists
-    stars_obj = read_generics(legend_file = legend_name, dimensionality = in_dim)
-  else
+    stars_obj = read_generics(legend_file = legend_name, dimensionality = in_dim)  else
     stop("Legend file is not accessible or does not exist!")
   #Need to keep check that drop_dim is consistent with the boolean typechecking framework suggested to Florian as
   #an extra layer of armour against inconsistent UDFs from the user
   result = st_apply(stars_obj, FUN = function_name, MARGIN = all_dims[-c(drop_dim)])
-  dir_create_status = dir.create(out_dir)
-  if(dir_create_status && dir.exists(out_dir)) #If new directory creation was successful
+  out_dirpath = paste(dirname(legend_name), out_dir, sep = "/")
+  dir_create_status = dir.create(out_dirpath)
+  if(dir_create_status && dir.exists(out_dirpath)) #If new directory creation was successful
   {
-    #Need to have separate write methods for resultant objects which have different dimensionality - say c(0,0,0,1) (a time-series only).
-    #Resultant dimensionality can be calculated from the dimensionality of the Collection and the UDF (as suggested to Florian)
-    st_write(obj = result, dsn = paste(out_dir, "out.tif", sep = "/"))
+    new_dim = in_dim
+    new_dim[drop_dim] = 0
+
+    num_band = dim(result)["band"]
+    num_time = dim(result)["time"]
+    out_path = paste(out_dirpath, "t_", sep = "/")
+    in_legend = read_legend(legend_name)
+
+    if(!is.na(num_time))
+    {
+      out_legend = matrix(ncol = 10, nrow = num_time * num_band)
+      colnames(out_legend) = c("xmin", "xmax", "ymin", "ymax", "filename", "time_index", "timestamp", "band_index", "band", "whether_raster")
+      out_legend = as.data.frame(out_legend)
+      band_list = as.character(unique(in_legend$band))
+      for(time_num in 1:num_time)
+      {
+        #time_num: iterator for time indices
+        #num_time: total number of time observations present
+        dir.create(path = paste(out_path, time_num, sep = ""))
+
+        time_index = time_num
+        timestamp = attr(result, "dimensions")$time$offset
+        timestamp = as.POSIXct(head(in_legend$timestamp[in_legend$time_index == time_num], 1)) #Timestamp of the 1st band for the corresponding time_index in in_legend
+
+        for(band_num in 1:num_band)
+        {
+          #band_num: iterator for band indices
+          #num_band: total number of bands present
+          tmp_stars_obj = result[,,, band_num, time_num, drop = TRUE] #time dimension inconsistent with (a) dim() and attr(<obj>, "dimensions") - need to look when reading TIFFs to stars objects
+          # tmp_raster_obj = as(tmp_stars_obj, "Raster")
+          st_write(obj = tmp_stars_obj, dsn = paste(out_path, time_num, "/", "b_", band_num, ".tif",  sep = ""))
+          # writeRaster(x = tmp_raster_obj, filename = paste(out_path, time_num, "/", "b_", band_num, ".tif",  sep = ""))
+
+          out_legend$xmin[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$from - 1
+          out_legend$xmax[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$to - 1
+          out_legend$ymin[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$from - 1
+          out_legend$ymax[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$to - 1
+
+          out_legend$filename[band_num] = paste(out_path, "/", time_num, "/", "b_", band_num, ".tif",  sep = "")
+
+          out_legend$band_index[band_num] = band_num
+          out_legend$band[band_num] = band_list[band_num]
+
+          out_legend$time_index[band_num] = time_index
+          out_legend$timestamp[band_num] = timestamp
+        }
+      }
+      write.csv(x = out_legend, file = paste(out_dirpath, "out_legend.csv", sep = "/"))
+
+      # #Need to have separate write methods for resultant objects which have different dimensionality - say c(0,0,0,0,1) (a time-series only).
+      # #Resultant dimensionality can be calculated from the dimensionality of the Collection and the UDF (as suggested to Florian)
+      # st_write(obj = result, dsn = paste(out_dir, "out.tif", sep = "/"))
+    } else
+    {
+      out_legend = matrix(ncol = 10, nrow = num_band)
+      colnames(out_legend) = c("xmin", "xmax", "ymin", "ymax", "filename", "time_index", "timestamp", "band_index", "band", "whether_raster")
+      out_legend = as.data.frame(out_legend)
+      dir.create(paste(out_path, NA, sep = ""))
+
+      time_index = NA
+      timestamp = NA
+
+      for(band_num in 1:num_band)
+      {
+        #band_num: iterator for band indices
+        #num_band: total number of bands present
+        st_write(obj = result[,,, band_num], dsn = paste(out_path, "NA/", "b_", band_num, ".tif",  sep = ""))
+
+        out_legend$xmin[band_num] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$from - 1
+        out_legend$xmax[band_num] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$to - 1
+        out_legend$ymin[band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$from - 1
+        out_legend$ymax[band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$to - 1
+
+        out_legend$filename[band_num] = paste(out_path, "NA/", "b_", band_num, ".tif",  sep = "")
+
+        out_legend$band_index[band_num] = band_num
+        out_legend$band[band_num] = band_list[band_num]
+
+        out_legend$time_index = time_index
+        out_legend$timestamp = timestamp
+      }
+      write.csv(x = out_legend, file = paste(out_dirpath, "out_legend.csv", sep = "/"))
+    }
   }
 }
