@@ -136,7 +136,7 @@ run_UDF = function(legend_name, function_name, drop_dim, in_dim = c(1,1,1,1,1), 
         {
           #band_num: iterator for band indices
           #num_band: total number of bands present
-          tmp_stars_obj = result[,,, band_num, time_num, drop = TRUE] #time dimension inconsistent with (a) dim() and attr(<obj>, "dimensions") - need to look when reading TIFFs to stars objects
+          tmp_stars_obj = result[,,, band_num, time_num, drop = TRUE] #time dimension inconsistent with (a) dim() and attr(<obj>, "dimensions") - need to look when reading TIFFs to stars objects!
           # tmp_raster_obj = as(tmp_stars_obj, "Raster")
           st_write(obj = tmp_stars_obj, dsn = paste(out_path, time_num, "/", "b_", band_num, ".tif",  sep = ""))
           # writeRaster(x = tmp_raster_obj, filename = paste(out_path, time_num, "/", "b_", band_num, ".tif",  sep = ""))
@@ -153,6 +153,8 @@ run_UDF = function(legend_name, function_name, drop_dim, in_dim = c(1,1,1,1,1), 
 
           out_legend$time_index[band_num] = time_index
           out_legend$timestamp[band_num] = timestamp
+
+          out_legend$whether_raster = 1
         }
       }
       write.csv(x = out_legend, file = paste(out_dirpath, "out_legend.csv", sep = "/"))
@@ -186,8 +188,10 @@ run_UDF = function(legend_name, function_name, drop_dim, in_dim = c(1,1,1,1,1), 
         out_legend$band_index[band_num] = band_num
         out_legend$band[band_num] = band_list[band_num]
 
-        out_legend$time_index = time_index
-        out_legend$timestamp = timestamp
+        out_legend$time_index[band_num] = time_index
+        out_legend$timestamp[band_num] = timestamp
+
+        out_legend$whether_raster[band_num] = 1
       }
       write.csv(x = out_legend, file = paste(out_dirpath, "out_legend.csv", sep = "/"))
     }
