@@ -152,7 +152,7 @@ run_UDF = function(legend_name, function_name, drop_dim, in_dim = c(1,1,1,1,1), 
               out_legend$ymin[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$from - 1
               out_legend$ymax[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$to - 1
 
-              out_legend$filename[band_num] = paste(out_path, "/", time_num, "/", "b_", band_num, ".tif",  sep = "")
+              out_legend$filename[band_num] = paste(out_dir, "/", time_num, "/", "b_", band_num, ".tif",  sep = "")
 
               out_legend$band_index[band_num] = band_num
               out_legend$band[band_num] = band_list[band_num]
@@ -190,7 +190,7 @@ run_UDF = function(legend_name, function_name, drop_dim, in_dim = c(1,1,1,1,1), 
           out_legend$ymin[band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$from - 1
           out_legend$ymax[band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$to - 1
 
-          out_legend$filename[band_num] = paste(out_path, "NA/", "b_", band_num, ".tif",  sep = "")
+          out_legend$filename[band_num] = paste(out_dir, "/t_NA/", "b_", band_num, ".tif",  sep = "")
 
           out_legend$band_index[band_num] = band_num
           out_legend$band[band_num] = band_list[band_num]
