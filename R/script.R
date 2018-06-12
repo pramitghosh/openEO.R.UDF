@@ -116,11 +116,11 @@ run_UDF = function(legend_name, function_name, drop_dim, in_dim = c(1,1,1,1,1), 
     if(new_dim[5] == 1) #If UDF result = raster
     {
       in_legend = read_legend(legend_name)
+      num_band = dim(result)["band"]
+      out_path = paste(out_dirpath, "t_", sep = "/")
       if(new_dim[4] == 1) #If UDF result = raster + temporal
       {
-        num_band = dim(result)["band"]
         num_time = dim(result)["time"]
-        out_path = paste(out_dirpath, "t_", sep = "/")
 
         if(!is.na(num_time))
         {
@@ -176,6 +176,7 @@ run_UDF = function(legend_name, function_name, drop_dim, in_dim = c(1,1,1,1,1), 
         out_legend = as.data.frame(out_legend)
         dir.create(paste(out_path, NA, sep = ""))
 
+        num_band = dim(result)["band"]
         time_index = NA
         timestamp = NA
 
@@ -183,7 +184,7 @@ run_UDF = function(legend_name, function_name, drop_dim, in_dim = c(1,1,1,1,1), 
         {
           #band_num: iterator for band indices
           #num_band: total number of bands present
-          st_write(obj = result[,,, band_num], dsn = paste(out_path, "NA/", "b_", band_num, ".tif",  sep = ""))
+          st_write(obj = result[,,,band_num], dsn = paste(out_path, "NA/", "b_", band_num, ".tif",  sep = ""))
 
           out_legend$xmin[band_num] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$from - 1
           out_legend$xmax[band_num] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$to - 1
