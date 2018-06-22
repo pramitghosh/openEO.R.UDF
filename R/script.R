@@ -94,8 +94,10 @@ read_generics = function(legend_file, dimensionality)
 #' The user has to mention the corresponding dimensionality of the output while defining the UDF in the process graph.
 #' @export
 #'
-run_UDF = function(legend_name, function_name, drop_dim, in_dim = c(1,1,1,1,1), out_dir = "results")
+run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim = c(1,1,1,1,1), out_dir = "results")
 {
+  # drop_dim and in_dim could be passed on from the backend as metadata in the form of files
+
   #In the future in_dim has to read in from disk (from what was written by the backend)
   #drop_dim is currently a numeric value corresponding to one of the indices of in_dim, but could also be a vector
   #For space (x,y), band (b), time (t) and whether raster? (r; 1 = raster, 0 = vector, NA = neither) for now
