@@ -110,7 +110,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
   result = st_apply(stars_obj, FUN = function_name, MARGIN = all_dims[-c(drop_dim)])
   out_dirpath = paste(dirname(legend_name), out_dir, sep = "/")
   dir_create_status = dir.create(out_dirpath)
-  if(dir_create_status && dir.exists(out_dirpath)) #If new directory creation was successful
+  if(dir.exists(out_dirpath)) #If new directory creation was successful
   {
     new_dim = in_dim
     new_dim[drop_dim] = 0
@@ -182,24 +182,24 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
         time_index = NA
         timestamp = NA
 
-        for(band_num in 1:num_band)
+        for(band_number in 1:num_band)
         {
-          #band_num: iterator for band indices
+          #band_number: iterator for band indices
           #num_band: total number of bands present
-          st_write(obj = result[,,,band_num], dsn = paste(out_path, "NA/", "b_", band_num, ".tif",  sep = ""))
+          st_write(obj = result[,,,band_number], dsn = paste(out_path, "NA/", "b_", band_number, ".tif",  sep = ""))
 
-          out_legend$xmin[band_num] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$from - 1
-          out_legend$xmax[band_num] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$to - 1
-          out_legend$ymin[band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$from - 1
-          out_legend$ymax[band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$to - 1
+          out_legend$xmin[band_number] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$from - 1
+          out_legend$xmax[band_number] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$to - 1
+          out_legend$ymin[band_number] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$from - 1
+          out_legend$ymax[band_number] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$to - 1
 
-          out_legend$filename[band_num] = paste("t_NA/", "b_", band_num, ".tif",  sep = "")
+          out_legend$filename[band_number] = paste("t_NA/", "b_", band_number, ".tif",  sep = "")
 
-          out_legend$band_index[band_num] = band_num
-          out_legend$band[band_num] = band_list[band_num]
+          out_legend$band_index[band_number] = band_number
+          out_legend$band[band_number] = band_list[band_number]
 
-          out_legend$time_index[band_num] = time_index
-          out_legend$timestamp[band_num] = timestamp
+          out_legend$time_index[band_number] = time_index
+          out_legend$timestamp[band_number] = timestamp
 
           out_legend$whether_raster = 1
         }
