@@ -4,8 +4,8 @@
 \alias{run_UDF}
 \title{Run an UDF on a `stars` object}
 \usage{
-run_UDF(legend_name, function_name, drop_dim, in_dim = c(1, 1, 1, 1, 1),
-  out_dir = "results")
+run_UDF(legend_name = "legend.csv", function_name, drop_dim, in_dim = c(1,
+  1, 1, 1, 1), out_dir = "results")
 }
 \arguments{
 \item{legend_name}{Name of the legend file as a string}
