@@ -23,11 +23,15 @@ install_github("pramitghosh/openeo.R.UDF")
 ```
 
 ## Usage
-**Please note that this section is likely to change during the development of this package. The documentation currently associated with this package too are outdated but acts as a general reference for the idea**
+**Please note that this section is likely to change during the development of this package. The documentation currently associated with this package might be outdated but acts as a general reference for the idea**
 
 This package loads GeoTIFF files from the disk by looking up an legend file provided in a CSV format containing metadata regarding the files into a `stars` object. It applies a function defined and specified by the user and writes the results back to disk in a directory specified by the user.
 
 ```
 run_UDF(legend_name = <Name of the legend file with path>, function_name = <Name of the UDF defined by the user>, drop_dim = <Dimension index of the dimension to be dropped>, in_dim = <Dimensionality of the incoming Collection object>, out_dir = <Name of the new directory where resultant file(s) are to be written>)
+```
+An example of using `run_UDF()` as a standalone function on the "legend" file could be:
+```
+run_UDF(legend_name = "../../../sources/scratch/disk_1/legend.csv", function_name = udf_func, drop_dim = 4)
 ```
 More details can be found in the function documentation.
