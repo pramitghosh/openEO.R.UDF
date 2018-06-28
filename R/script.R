@@ -55,28 +55,6 @@ read_generics = function(legend_file, dimensionality)
   stars_nD
 }
 
-# create_out_legend = function(in_legend, new_dim)
-# {
-#   out_legend = read_legend(in_legend)
-#   if(new_dim[1] || new_dim[2] == 0)
-#   {
-#     out_legend$xmin = NA
-#     out_legend$xmax = NA
-#     out_legend$ymin = NA
-#     out_legend$ymax = NA
-#   }
-#   if(new_dim[3] == 0)
-#   {
-#     out_legend$band_index = NA
-#     out_legend$band = NA
-#   }
-#   if(new_dim[4] == 0)
-#   {
-#     out_legend$time_index = NA
-#     out_legend$time_stamp = NA
-#   }
-#   out_leged$whether_raster = new_dim[5] #whether_raster can be 1 (Raster), 0 (Vector) or NA (Neither)
-# }
 
 #' @title Run an UDF on a `stars` object
 #'
@@ -180,6 +158,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
         out_legend = as.data.frame(out_legend)
         dir.create(paste(out_path, NA, sep = ""))
     
+        band_list = as.character(unique(in_legend$band))
         num_band = dim(result)["band"]
         time_index = NA
         timestamp = NA
