@@ -2,28 +2,30 @@
 % Please edit documentation in R/script.R
 \name{run_UDF}
 \alias{run_UDF}
-\title{Run an UDF on a `stars` object}
+\title{Run an UDF on a `stars` object created from generic GeoTIFF files}
 \usage{
 run_UDF(legend_name = "legend.csv", function_name, drop_dim, in_dim = c(1,
   1, 1, 1, 1), out_dir = "results")
 }
 \arguments{
-\item{legend_name}{Name of the legend file as a string}
+\item{legend_name}{Name of the legend file as a string (default: "legend.csv")}
 
 \item{function_name}{Name of the User-Defined Function (UDF) the user defined in his own script}
 
 \item{drop_dim}{Numeric value (or vector) representing the dimension number of the dimension to be dropped. (1,2 = Space, 3 = Band, 4 = Time, 5 = Whether raster)}
 
-\item{in_dim}{Dimensionality of the incoming Collection object (default: spatial multi-band, multi-temporal raster = c(1,1,1,1,1))}
+\item{in_dim}{Dimensionality of the incoming Collection object (default: `c(1,1,1,1,1)` representing spatial multi-band, multi-temporal raster)}
 
-\item{out_dir}{Path of the directory where the resulting files are to be written to disk (a new directory will be created)}
+\item{out_dir}{Path of the directory where the resulting files are to be written to disk (default: "results")}
 }
 \description{
 Reads generic files from disk by looking up a legend file, runs the User Defined Function (UDF) specified by the user and
 writes back the results to disk as a multi-band GeoTIFF file named `out.tif` in the directory specified by the user.
 }
 \details{
-The semantics of the written multi-band GeoTIFF depends on the argument `drop_dim`. If `drop_dim = 4`
+The semantics of the written multi-band GeoTIFF depends on the argument `drop_dim`. For example, if `drop_dim = 4`
 the bands in the output file represent bands while if `drop_dim = 3`, the bands in the output file represent time.
-The user has to mention the corresponding dimensionality of the output while defining the UDF in the process graph.
+This modification of the dimensionality (`drop_dim`) as well as the dimensionality of the incoming Collection object
+(`in_dim`) would be controlled by the backend as parameters passed on to the UDF server as metadata files along with
+the legend file (`legend_name`).
 }

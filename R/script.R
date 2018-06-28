@@ -56,26 +56,28 @@ read_generics = function(legend_file, dimensionality)
 }
 
 
-#' @title Run an UDF on a `stars` object
+#' @title Run an UDF on a `stars` object created from generic GeoTIFF files
 #'
 #' @description Reads generic files from disk by looking up a legend file, runs the User Defined Function (UDF) specified by the user and
 #' writes back the results to disk as a multi-band GeoTIFF file named `out.tif` in the directory specified by the user.
 #'
-#' @param legend_name Name of the legend file as a string
+#' @param legend_name Name of the legend file as a string (default: "legend.csv")
 #' @param function_name Name of the User-Defined Function (UDF) the user defined in his own script
 #' @param drop_dim Numeric value (or vector) representing the dimension number of the dimension to be dropped. (1,2 = Space, 3 = Band, 4 = Time, 5 = Whether raster)
-#' @param out_dir Path of the directory where the resulting files are to be written to disk (a new directory will be created)
-#' @param in_dim Dimensionality of the incoming Collection object (default: spatial multi-band, multi-temporal raster = c(1,1,1,1,1))
+#' @param out_dir Path of the directory where the resulting files are to be written to disk (default: "results")
+#' @param in_dim Dimensionality of the incoming Collection object (default: `c(1,1,1,1,1)` representing spatial multi-band, multi-temporal raster)
 #'
-#' @details The semantics of the written multi-band GeoTIFF depends on the argument `drop_dim`. If `drop_dim = 4`
+#' @details The semantics of the written multi-band GeoTIFF depends on the argument `drop_dim`. For example, if `drop_dim = 4`
 #' the bands in the output file represent bands while if `drop_dim = 3`, the bands in the output file represent time.
-#' The user has to mention the corresponding dimensionality of the output while defining the UDF in the process graph.
+#' This modification of the dimensionality (`drop_dim`) as well as the dimensionality of the incoming Collection object
+#' (`in_dim`) would be controlled by the backend as parameters passed on to the UDF server as metadata files along with
+#' the legend file (`legend_name`).
 #' @export
 #'
 run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim = c(1,1,1,1,1), out_dir = "results")
 {
     # drop_dim and in_dim could be passed on from the backend as metadata in the form of files
-    
+
     #In the future in_dim has to read in from disk (from what was written by the backend)
     #drop_dim is currently a numeric value corresponding to one of the indices of in_dim, but could also be a vector
     #For space (x,y), band (b), time (t) and whether raster? (r; 1 = raster, 0 = vector, NA = neither) for now
@@ -87,14 +89,14 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
     #an extra layer of armour against inconsistent UDFs from the user
     result = st_apply(stars_obj, FUN = function_name, MARGIN = all_dims[-c(drop_dim)])
     out_dirpath = paste(dirname(legend_name), out_dir, sep = "/")
-    
+
     if (!dir.exists(out_dirpath)) {
       dir.create(out_dirpath)
     }
-  
+
     new_dim = in_dim
     new_dim[drop_dim] = 0
-    
+
     if(new_dim[5] == 1) #If UDF result = raster
     {
       in_legend = read_legend(legend_name)
@@ -103,7 +105,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
       if(new_dim[4] == 1) #If UDF result = raster + temporal
       {
         num_time = dim(result)["time"]
-    
+
         if(!is.na(num_time))
         {
           out_legend = matrix(ncol = 10, nrow = num_time * num_band)
@@ -115,11 +117,11 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
             #time_num: iterator for time indices
             #num_time: total number of time observations present
             dir.create(path = paste(out_path, time_num, sep = ""))
-    
+
             time_index = time_num
             timestamp = attr(result, "dimensions")$time$offset
             timestamp = as.POSIXct(head(in_legend$timestamp[in_legend$time_index == time_num], 1)) #Timestamp of the 1st band for the corresponding time_index in in_legend
-    
+
             for(band_num in 1:num_band)
             {
               #band_num: iterator for band indices
@@ -128,25 +130,25 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
               # tmp_raster_obj = as(tmp_stars_obj, "Raster")
               st_write(obj = tmp_stars_obj, dsn = paste(out_path, time_num, "/", "b_", band_num, ".tif",  sep = ""))
               # writeRaster(x = tmp_raster_obj, filename = paste(out_path, time_num, "/", "b_", band_num, ".tif",  sep = ""))
-    
+
               out_legend$xmin[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$from - 1
               out_legend$xmax[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$to - 1
               out_legend$ymin[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$from - 1
               out_legend$ymax[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$to - 1
-    
+
               out_legend$filename[band_num] = paste(time_num, "/", "b_", band_num, ".tif",  sep = "")
-    
+
               out_legend$band_index[band_num] = band_num
               out_legend$band[band_num] = band_list[band_num]
-    
+
               out_legend$time_index[band_num] = time_index
               out_legend$timestamp[band_num] = timestamp
-    
+
               out_legend$whether_raster = 1
             }
           }
           write.csv(x = out_legend, file = paste(out_dirpath, "out_legend.csv", sep = "/"))
-    
+
           # #Need to have separate write methods for resultant objects which have different dimensionality - say c(0,0,0,0,1) (a time-series only).
           # #Resultant dimensionality can be calculated from the dimensionality of the Collection and the UDF (as suggested to Florian)
           # st_write(obj = result, dsn = paste(out_dir, "out.tif", sep = "/"))
@@ -157,31 +159,31 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
         colnames(out_legend) = c("xmin", "xmax", "ymin", "ymax", "filename", "time_index", "timestamp", "band_index", "band", "whether_raster")
         out_legend = as.data.frame(out_legend)
         dir.create(paste(out_path, NA, sep = ""))
-    
+
         band_list = as.character(unique(in_legend$band))
         num_band = dim(result)["band"]
         time_index = NA
         timestamp = NA
-    
+
         for(band_number in 1:num_band)
         {
           #band_number: iterator for band indices
           #num_band: total number of bands present
           st_write(obj = result[,,,band_number], dsn = paste(out_path, "NA/", "b_", band_number, ".tif",  sep = ""))
-    
+
           out_legend$xmin[band_number] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$from - 1
           out_legend$xmax[band_number] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$to - 1
           out_legend$ymin[band_number] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$from - 1
           out_legend$ymax[band_number] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$to - 1
-    
+
           out_legend$filename[band_number] = paste("t_NA/", "b_", band_number, ".tif",  sep = "")
-    
+
           out_legend$band_index[band_number] = band_number
           out_legend$band[band_number] = band_list[band_number]
-    
+
           out_legend$time_index[band_number] = time_index
           out_legend$timestamp[band_number] = timestamp
-    
+
           out_legend$whether_raster = 1
         }
         write.csv(x = out_legend, file = paste(out_dirpath, "out_legend.csv", sep = "/"))
