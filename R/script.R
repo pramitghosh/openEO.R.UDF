@@ -101,6 +101,8 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
     {
       in_legend = read_legend(legend_name)
       num_band = dim(result)["band"]
+      if(is.na(num_band) || num_band < 1) num_band = 1 #Since rasters must have at least 1 band in it!
+
       out_path = paste(out_dirpath, "t_", sep = "/")
       if(new_dim[4] == 1) #If UDF result = raster + temporal
       {
@@ -126,9 +128,9 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
             {
               #band_num: iterator for band indices
               #num_band: total number of bands present
-              tmp_stars_obj = result[,,, band_num, time_num, drop = TRUE] #time dimension inconsistent with (a) dim() and attr(<obj>, "dimensions") - need to look when reading TIFFs to stars objects!
+              tmp_stars_obj = result[,,, band_num, time_num] #time dimension inconsistent with (a) dim() and attr(<obj>, "dimensions") - need to look when reading TIFFs to stars objects!
               # tmp_raster_obj = as(tmp_stars_obj, "Raster")
-              st_write(obj = tmp_stars_obj, dsn = paste(out_path, time_num, "/", "b_", band_num, ".tif",  sep = ""))
+              st_write(obj = tmp_stars_obj, dsn = paste(out_path, time_num, "/b_", band_num, ".tif",  sep = ""))
               # writeRaster(x = tmp_raster_obj, filename = paste(out_path, time_num, "/", "b_", band_num, ".tif",  sep = ""))
 
               out_legend$xmin[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$x$offset + attr(result, "dimensions")$x$from - 1
@@ -136,7 +138,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
               out_legend$ymin[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$from - 1
               out_legend$ymax[(time_num - 1) * num_band + band_num] = attr(result, "dimensions")$y$offset + attr(result, "dimensions")$y$to - 1
 
-              out_legend$filename[band_num] = paste(time_num, "/", "b_", band_num, ".tif",  sep = "")
+              out_legend$filename[band_num] = paste("t_", time_num, "/", "b_", band_num, ".tif",  sep = "")
 
               out_legend$band_index[band_num] = band_num
               out_legend$band[band_num] = band_list[band_num]
