@@ -45,6 +45,9 @@ read_generics = function(legend_file, dimensionality)
     {
       stars_nD = c(stars_nD, stars_list[[i]])
     }
+    # Fixing temporal dimensions - might need to find better solutions!
+    attr(stars_nD, "dimensions")[["time"]]$to = as.numeric(dim(stars_nD)["time"])
+    attr(stars_nD, "dimensions")[["time"]]$delta = attr(stars_nD, "dimensions")[["time"]]$delta / (as.numeric(dim(stars_nD)["time"]) - 1)
   } else if(dimensionality[5] == 0) #If vector
   {
     # create a stars object named `stars_nD` from the vector files...
