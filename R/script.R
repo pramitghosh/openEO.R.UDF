@@ -147,7 +147,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
               out_legend$band[(time_num - 1) * num_band + band_num] = band_list[band_num]
 
               out_legend$time_index[(time_num - 1) * num_band + band_num] = time_index
-              out_legend$timestamp[(time_num - 1) * num_band + band_num] = timestamp
+              out_legend$timestamp[(time_num - 1) * num_band + band_num] = as.character.Date(timestamp)
 
               out_legend$whether_raster = 1
             }
