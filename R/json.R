@@ -70,10 +70,11 @@ json2stars = function(json)
     as_stars = lapply(X = bt_list[[time_num]], FUN = st_as_stars)
     # as_stars = c(as_stars[[1]], as_stars[[2]], along = "band") #Vectorized implementation of `stars.c()` not working!
     stars_bands = as_stars[[1]]
-    for(times in 2:length(as_stars))
-    {
-      stars_bands = c(stars_bands, as_stars[[times]], along = "band")
-    }
+    if(length(as_stars > 1))
+      for(times in 2:length(as_stars))
+      {
+        stars_bands = c(stars_bands, as_stars[[times]], along = "band")
+      }
     if(is.null(stars_obj))
     {
       stars_obj = c(stars_bands, dim_name = "time", values = timestamps_padded[time_num:time_num+1])
@@ -90,5 +91,32 @@ json2stars = function(json)
     }
   }
   stars_obj
+}
+
+run_script = function(stars_obj, dim_mod, function_name, script_file = "./tmp_udf.R")
+{
+  in_dim = dim(stars_obj)
+  all_dim = 1:4
+  if("x" %in% names(in_dim) && "y" %in% names(in_dim))
+    all_dim[1] = 1 else
+      all_dim[1] = NA
+  if("band" %in% names(in_dim))
+    all_dim[2] = 2 else
+      all_dim[2] = NA
+  if("time" %in% names(in_dim))
+    all_dim[3] = 3 else
+      all_dim[3] = NA
+  all_dim[4] = 4 #Currently assuming `stars_obj` has rasters
+
+  if(file.exists(script_file))
+  {
+    source(script_file)
+    result = st_apply(stars_obj, FUN = function_name, MARGIN = all_dim[-c(dim_mod)])
+    new_dim = all_dim
+    new_dim[dim_mod] = NA
+  } else
+    stop("Script file is unavailable!")
+
+  result
 }
 
