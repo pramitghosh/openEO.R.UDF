@@ -95,6 +95,10 @@ json2stars = function(json)
 
 run_script = function(stars_obj, dim_mod, function_name, script_file = "./tmp_udf.R")
 {
+  # dim_mod = 1, 2 means space
+  # dim_mod = 3 means band
+  # dim_mod = 4 means time
+  # dim_mod = 5 means whether raster or feature (default: raster)
   in_dim = dim(stars_obj)
   all_dim = 1:4
   if("x" %in% names(in_dim) && "y" %in% names(in_dim))
