@@ -124,7 +124,7 @@ run_script = function(stars_obj, dim_mod, function_name, script_file = "./tmp_ud
   result
 }
 
-stars2json = function(stars_obj, json_in)
+stars2json = function(stars_obj, json_in, json_out_file = "udf_response.json")
 {
   json_out = json_in #Copying structure of JSON
   json_out$code = list()
@@ -174,6 +174,28 @@ stars2json = function(stars_obj, json_in)
     json_out$data$raster_collection_tiles[[bands]]$data = data
   }
   # For writing to disk
-  # write_json(x = json_out, path = "udf_response.json", auto_unbox = TRUE, pretty = TRUE)
-  json_response = toJSON(x = json_out, auto_unbox = TRUE, pretty = TRUE)
+  write_json(x = json_out, path = json_out_file, auto_unbox = TRUE, pretty = TRUE)
+  # json_response = toJSON(x = json_out, auto_unbox = TRUE, pretty = TRUE)
+}
+
+json2fname = function(json_in)
+  return(json_in$code$fname)
+
+json2dim_mod = function(json_in)
+  return(json_in$code$dim_mod)
+
+run_UDF.json = function(json_in)
+{
+  json2script(json_in)
+
+  # udf_func = json2fname(json_in)
+  # dim_mod = json2dim_mod(json_in)
+  udf_func = "median" #Testing
+  dim_mod = 4         #Testing
+
+  stars_in = json2stars(json_in)
+  stars_out = run_script(stars_obj = stars_in, dim_mod = dim_mod, function_name = udf_func)
+  stars2json(stars_obj = stars_out, json_in = json_in, json_out_file = "udf_response.json")
+
+  # Generate HTTP response for "backend" with body as the JSON in the file `json_out_file`
 }
