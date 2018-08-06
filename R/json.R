@@ -5,6 +5,7 @@ json2script = function(json)
   sink(paste("tmp_udf", "R", sep = "."))
   cat(script)
   sink()
+  cat("Extracted script for JSON!\n")
 }
 
 tile2raster = function(tile, time_num, proj)
@@ -49,6 +50,8 @@ json2stars = function(json)
   proj_string = json$data$proj
   num_bands = length(json$data$raster_collection_tiles)
   num_time = length(json$data$raster_collection_tiles[[1]]$start_times)
+  num_bands = 3 #Testing
+  num_time = 2 #Testing
 
   bt_list = list()
   length(bt_list) = num_time
@@ -90,10 +93,11 @@ json2stars = function(json)
       attr(stars_obj, "dimensions")[["time"]]$delta = mean(diff(timestamps))
     }
   }
+  cat("Converted JSON to stars object!\n")
   stars_obj
 }
 
-run_script = function(stars_obj, dim_mod, function_name, script_file = "./tmp_udf.R")
+run_script = function(stars_obj, dim_mod, function_name, script_file = "tmp_udf.R")
 {
   # dim_mod = 1, 2 means space
   # dim_mod = 3 means band
@@ -120,11 +124,11 @@ run_script = function(stars_obj, dim_mod, function_name, script_file = "./tmp_ud
     new_dim[dim_mod] = NA
   } else
     stop("Script file is unavailable!")
-
+  cat("Applied UDF on stars object!\n")
   result
 }
 
-stars2json = function(stars_obj, json_in, json_out_file = "udf_response.json")
+stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
 {
   json_out = json_in #Copying structure of JSON
   json_out$code = list()
@@ -136,26 +140,45 @@ stars2json = function(stars_obj, json_in, json_out_file = "udf_response.json")
     tmp_extent = json_out$data$raster_collection_tiles[[bands]][["extent"]]
     # Need another robust way to loop over bands & time since using `attr()` in the manner
     # below will not work for stars objects with arbitrary dimensions
-    delta_x = attr(stars_obj[,,,bands,], "dimensions")$x$delta
-    delta_y = attr(stars_obj[,,,bands,], "dimensions")$y$delta
-    x1 = attr(stars_obj[,,,bands,], "dimensions")$x$offset
-    x2 = attr(stars_obj[,,,bands,], "dimensions")$x$offset + delta_x * attr(stars_obj[,,,bands,], "dimensions")$x$to
-    y1 = attr(stars_obj[,,,bands,], "dimensions")$y$offset
-    y2 = attr(stars_obj[,,,bands,], "dimensions")$y$offset + delta_y * attr(stars_obj[,,,bands,], "dimensions")$y$to
+    if("time" %in% dimnames(stars_obj))
+    {
+      delta_x = attr(stars_obj[,,,bands,], "dimensions")$x$delta
+      delta_y = attr(stars_obj[,,,bands,], "dimensions")$y$delta
+      x1 = attr(stars_obj[,,,bands,], "dimensions")$x$offset
+      x2 = attr(stars_obj[,,,bands,], "dimensions")$x$offset + delta_x * attr(stars_obj[,,,bands,], "dimensions")$x$to
+      y1 = attr(stars_obj[,,,bands,], "dimensions")$y$offset
+      y2 = attr(stars_obj[,,,bands,], "dimensions")$y$offset + delta_y * attr(stars_obj[,,,bands,], "dimensions")$y$to
+    } else
+    {
+      delta_x = attr(stars_obj[,,,bands], "dimensions")$x$delta
+      delta_y = attr(stars_obj[,,,bands], "dimensions")$y$delta
+      x1 = attr(stars_obj[,,,bands], "dimensions")$x$offset
+      x2 = attr(stars_obj[,,,bands], "dimensions")$x$offset + delta_x * attr(stars_obj[,,,bands], "dimensions")$x$to
+      y1 = attr(stars_obj[,,,bands], "dimensions")$y$offset
+      y2 = attr(stars_obj[,,,bands], "dimensions")$y$offset + delta_y * attr(stars_obj[,,,bands], "dimensions")$y$to
+    }
     tmp_extent = list(north = max(y1,y2), south = min(y1,y2), west = min(x1,x2), east = max(x1,x2), height = if(sign(delta_y) < 0) -1 * delta_y else delta_y, width = if(sign(delta_x) < 0) -1 * delta_x else delta_x)
     json_out$data$raster_collection_tiles[[bands]]$extent = tmp_extent
 
     times = as.numeric(dim(stars_obj)["time"])
-    t_start = seq(from = attr(stars_obj[,,,bands,], "dimensions")$time$offset, by = attr(stars_obj[,,,bands,], "dimensions")$time$delta, length.out = times)
-    t_end = c(t_start[2:length(t_start)], t_start[length(t_start)] + attr(stars_obj[,,,bands,], "dimensions")$time$delta)
-    json_out$data$raster_collection_tiles[[bands]]$start_times = as.list(as.character.POSIXt(t_start, format = "%Y-%m-%dT%T %Z"))
-    json_out$data$raster_collection_tiles[[bands]]$end_times = as.list(as.character.POSIXt(t_end, format = "%Y-%m-%dT%T %Z"))
-
-    data = list()
-    # length(data) = times
-    for(t in 1:times)
+    if(!is.na(times))
     {
-      bt_raster = as(stars_obj[,,,bands,t, drop = TRUE], "Raster")
+      t_start = seq(from = attr(stars_obj[,,,bands,], "dimensions")$time$offset, by = attr(stars_obj[,,,bands,], "dimensions")$time$delta, length.out = times)
+      t_end = c(t_start[2:length(t_start)], t_start[length(t_start)] + attr(stars_obj[,,,bands,], "dimensions")$time$delta)
+      json_out$data$raster_collection_tiles[[bands]]$start_times = as.list(as.character.POSIXt(t_start, format = "%Y-%m-%dT%T %Z"))
+      json_out$data$raster_collection_tiles[[bands]]$end_times = as.list(as.character.POSIXt(t_end, format = "%Y-%m-%dT%T %Z"))
+    } else
+    {
+      t_start = NA
+      t_end = NA
+      json_out$data$raster_collection_tiles[[bands]]$start_times = as.list(NA)
+      json_out$data$raster_collection_tiles[[bands]]$end_times = as.list(NA)
+    }
+    data = list()
+    # if(!is.na(times)) length(data) = times else length(data) = 1
+    if(is.na(times))
+    {
+      bt_raster = as(stars_obj[,,,bands, drop = TRUE], "Raster")
       bt_df = as.data.frame(bt_raster, xy = TRUE)
       uy = unique(bt_df[,2])
       y_list = list()
@@ -170,12 +193,34 @@ stars2json = function(stars_obj, json_in, json_out_file = "udf_response.json")
         y_list = c(y_list, list(x_list))
       }
       data = c(data, list(y_list))
+    } else
+    {
+      for(t in 1:times)
+      {
+        bt_raster = as(stars_obj[,,,bands,t, drop = TRUE], "Raster")
+        bt_df = as.data.frame(bt_raster, xy = TRUE)
+        uy = unique(bt_df[,2])
+        y_list = list()
+        # length(y_list) = length(uy)
+        for(ys in uy)
+        {
+          ux = as.list(bt_df$x[bt_df$y == ys])
+          x_list = list()
+          for(xs in ux)
+            x_list = as.list(as.numeric(subset(bt_df, subset = bt_df$y == ys, select = "layer")[[1]]))
+
+          y_list = c(y_list, list(x_list))
+        }
+        data = c(data, list(y_list))
+      }
     }
     json_out$data$raster_collection_tiles[[bands]]$data = data
   }
   # For writing to disk
-  write_json(x = json_out, path = json_out_file, auto_unbox = TRUE, pretty = TRUE)
-  # json_response = toJSON(x = json_out, auto_unbox = TRUE, pretty = TRUE)
+  # write_json(x = json_out, path = json_out_file, auto_unbox = TRUE, pretty = TRUE)
+  json_response = toJSON(x = json_out, auto_unbox = TRUE, pretty = TRUE)
+  cat("Converted resulting stars object back to JSON!\n")
+  json_response
 }
 
 json2fname = function(json_in)
@@ -184,8 +229,11 @@ json2fname = function(json_in)
 json2dim_mod = function(json_in)
   return(json_in$code$dim_mod)
 
-run_UDF.json = function(json_in)
+#' @post /udf
+run_UDF.json = function(req)
 {
+  cat("Started executing at endpoint /udf\n")
+  json_in = fromJSON(req$postBody)
   json2script(json_in)
 
   # udf_func = json2fname(json_in)
@@ -195,7 +243,8 @@ run_UDF.json = function(json_in)
 
   stars_in = json2stars(json_in)
   stars_out = run_script(stars_obj = stars_in, dim_mod = dim_mod, function_name = udf_func)
-  stars2json(stars_obj = stars_out, json_in = json_in, json_out_file = "udf_response.json")
+  json_out = stars2json(stars_obj = stars_out, json_in = json_in)#, json_out_file = "udf_response.json")
 
   # Generate HTTP response for "backend" with body as the JSON in the file `json_out_file`
+  json_out
 }
