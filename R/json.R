@@ -47,6 +47,7 @@ tile2raster = function(tile, time_num, proj)
 
 json2stars = function(json)
 {
+  cat("Started converting JSON to stars...\n")
   proj_string = json$data$proj
   num_bands = length(json$data$raster_collection_tiles)
   num_time = length(json$data$raster_collection_tiles[[1]]$start_times)
@@ -60,14 +61,17 @@ json2stars = function(json)
   timestamps_padded = c(timestamps, timestamps[length(timestamps)]+diff(timestamps)[1]) #Need to start an issue in `stars`
   for(band_num in 1:num_bands)
   {
+    cat(paste("Processing Band: ", band_num, "; ", sep = ""))
     tile = json$data$raster_collection_tiles[[band_num]]
     for(time_num in 1:num_time)
     {
+      cat(paste("Time: ", time_num, "...\n", sep = ""))
       bt_list[[time_num]] = c(bt_list[[time_num]], tile2raster(tile, time_num, proj_string))
     }
   }
-
+  cat("Finished converting JSON to Raster objects!")
   stars_obj = NULL
+  cat("Starting to convert Raster to stars objects...\n")
   for(time_num in 1:num_time)
   {
     as_stars = lapply(X = bt_list[[time_num]], FUN = st_as_stars)
@@ -99,6 +103,7 @@ json2stars = function(json)
 
 run_script = function(stars_obj, dim_mod, function_name, script_file = "tmp_udf.R")
 {
+  cat("Started executing UDF on stars object...\n")
   # dim_mod = 1, 2 means space
   # dim_mod = 3 means band
   # dim_mod = 4 means time
@@ -130,6 +135,7 @@ run_script = function(stars_obj, dim_mod, function_name, script_file = "tmp_udf.
 
 stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
 {
+  cat("Started converting stars object to JSON...\n")
   json_out = json_in #Copying structure of JSON
   json_out$code = list()
   json_out$data$proj = attr(stars_obj, "dimensions")$x$refsys
@@ -139,6 +145,7 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
     json_out$data$raster_collection_tiles = json_out$data$raster_collection_tiles[-c(tot_bands+1:length(json_out$data$raster_collection_tiles))]
     for(bands in 1:tot_bands)
     {
+      cat(paste("Band: ", bands, "; ", sep = ""))
       tmp_extent = json_out$data$raster_collection_tiles[[bands]][["extent"]]
       # Need another robust way to loop over bands & time since using `attr()` in the manner
       # below will not work for stars objects with arbitrary dimensions
@@ -180,6 +187,7 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
       # if(!is.na(times)) length(data) = times else length(data) = 1
       if(is.na(times))
       {
+        cat("Time: 1...\n")
         bt_raster = as(stars_obj[,,,bands, drop = TRUE], "Raster")
         bt_df = as.data.frame(bt_raster, xy = TRUE)
         uy = unique(bt_df[,2])
@@ -199,6 +207,7 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
       {
         for(t in 1:times)
         {
+          cat(paste("Time: ", t, "...\n", sep = ""))
           bt_raster = as(stars_obj[,,,bands,t, drop = TRUE], "Raster")
           bt_df = as.data.frame(bt_raster, xy = TRUE)
           uy = unique(bt_df[,2])
@@ -220,6 +229,7 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
     }
   } else
   {
+    cat("Band: 1; ")
     json_out$data$raster_collection_tiles = json_out$data$raster_collection_tiles[-c(2:length(json_out$data$raster_collection_tiles))]
     tmp_extent = json_out$data$raster_collection_tiles[[1]][["extent"]]
     if("time" %in% dimnames(stars_obj))
@@ -259,6 +269,7 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
     data = list()
     if(is.na(times))
     {
+      cat("Time: 1...\n")
       bt_raster = as(stars_obj[,,], "Raster")
       bt_df = as.data.frame(bt_raster, xy = TRUE)
       uy = unique(bt_df[,2])
@@ -278,6 +289,7 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
     {
       for(t in 1:times)
       {
+        cat(paste("Time: ", t, "...\n", sep = ""))
         bt_raster = as(stars_obj[,,,t, drop = TRUE], "Raster")
         bt_df = as.data.frame(bt_raster, xy = TRUE)
         uy = unique(bt_df[,2])
@@ -320,10 +332,10 @@ run_UDF.json = function(req)
   # udf_func = json2fname(json_in)
   # dim_mod = json2dim_mod(json_in)
   udf_func = "median" #Testing
-  dim_mod = 3         #Testing
+  dim_mod = 4         #Testing
 
   stars_in = json2stars(json_in)
-  stars_out = run_script(stars_obj = stars_in, dim_mod = dim_mod, function_name = udf_func)
+  stars_out = run_script(stars_obj = stars_in, dim_mod = dim_mod, function_name = "myfunc")
   json_out = stars2json(stars_obj = stars_out, json_in = json_in)#, json_out_file = "udf_response.json")
 
   # Generate HTTP response for "backend" with body as the JSON in the file `json_out_file`
