@@ -64,20 +64,45 @@ json2stars = function(json)
   timestamps = strptime(json$data$raster_collection_tiles[[1]]$start_times, format = "%Y-%m-%dT%T", tz = "Europe/Berlin")
   timestamps_padded = c(timestamps, timestamps[length(timestamps)]+diff(timestamps)[1]) #Need to start an issue in `stars`
 
-  #Todo: Get rid of the nested for loops below and in `tile2raster()`
-  #Todo: Think about using dataframes/martices
-  for(band_num in 1:num_bands)
+  # #Todo: Get rid of the nested for loops below and in `tile2raster()`
+  # #Todo: Think about using dataframes/martices
+  # for(band_num in 1:num_bands)
+  # {
+  #   cat(paste(Sys.time(), "; Processing Band: ", band_num, "; ", sep = ""))
+  #   tile = json$data$raster_collection_tiles[[band_num]]
+  #   for(time_num in 1:num_time)
+  #   {
+  #     cat(paste(Sys.time(), "; Time: ", time_num, "...\n", sep = ""))
+  #     bt_list[[time_num]] = c(bt_list[[time_num]], tile2raster(tile, time_num, proj_string))
+  #   }
+  # }
+
+  on_bands = function(band_num, raster_collection, time_num, proj_string)
   {
-    cat(paste(Sys.time(), "; Processing Band: ", band_num, "; ", sep = ""))
-    tile = json$data$raster_collection_tiles[[band_num]]
-    for(time_num in 1:num_time)
-    {
-      cat(paste(Sys.time(), "; Time: ", time_num, "...\n", sep = ""))
-      bt_list[[time_num]] = c(bt_list[[time_num]], tile2raster(tile, time_num, proj_string))
-    }
+    print(paste(Sys.time(), "; Processing Band: ", band_num, "; ", sep = ""))
+    tile = raster_collection[[band_num]]
+    tile2raster(tile = tile, time_num = time_num, proj = proj_string)
   }
+
+  on_times = function(time_num, raster_collection, proj_string)
+  {
+    print(paste(Sys.time(), "; Time: ", time_num, "...\n", sep = ""))
+    b_list = lapply(
+      X = as.list(1:num_bands),
+      FUN = on_bands,
+      raster_collection,
+      time_num,
+      proj_string
+    )
+    b_list
+  }
+
+  raster_collection = json$data$raster_collection_tiles
+  bt_list = lapply(X = as.list(1:num_time), FUN = on_times, raster_collection, proj_string)
+
   print(Sys.time())
   cat("Finished converting JSON to Raster objects!\n")
+
   stars_obj = NULL
   print(Sys.time())
   cat("Starting to convert Raster to stars objects...\n")
