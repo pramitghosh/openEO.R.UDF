@@ -29,21 +29,27 @@ tile2raster = function(tile, time_num, proj)
 
   i = 0
   x = xmin + resx/2
-  while(x < xmax)
-  {
-    i = i + 1
-    j = 0
-    y = ymin + resy/2
-    while(y < ymax)
-    {
-      j = j + 1
-      xyz$x[(i - 1) * ytot + j] = x
-      xyz$y[(i - 1) * ytot + j] = y
-      xyz$z[(i - 1) * ytot + j] = tile$data[[time_num]][[i]][[j]]
-      y = y + resy
-    }
-    x = x + resx
-  }
+  y = ymin + resy/2
+  xyz$x = rep(seq(from = x, to = xmax - resx/2, by = resx), each = ytot)
+  xyz$y = rep(seq(from = y, to = ymax - resy/2, by = resy), xtot)
+  xyz$z = rapply(object = tile$data[[time_num]], f = unlist)
+
+  # while(x < xmax)
+  # {
+  #   i = i + 1
+  #   j = 0
+  #   y = ymin + resy/2
+  #   while(y < ymax)
+  #   {
+  #     j = j + 1
+  #     xyz$x[(i - 1) * ytot + j] = x
+  #     xyz$y[(i - 1) * ytot + j] = y
+  #     xyz$z[(i - 1) * ytot + j] = tile$data[[time_num]][[i]][[j]]
+  #     y = y + resy
+  #   }
+  #   x = x + resx
+  # }
+
   r = rasterFromXYZ(xyz, crs = proj)
   r
 }
@@ -79,14 +85,14 @@ json2stars = function(json)
 
   on_bands = function(band_num, raster_collection, time_num, proj_string)
   {
-    print(paste(Sys.time(), "; Processing Band: ", band_num, "; ", sep = ""))
+    cat(paste("\n", Sys.time(), "; Processing Band: ", band_num, "; ", sep = ""))
     tile = raster_collection[[band_num]]
     tile2raster(tile = tile, time_num = time_num, proj = proj_string)
   }
 
   on_times = function(time_num, raster_collection, proj_string)
   {
-    print(paste(Sys.time(), "; Time: ", time_num, "...\n", sep = ""))
+    cat(paste("\n", Sys.time(), "; Time: ", time_num, "...", sep = ""))
     b_list = lapply(
       X = as.list(1:num_bands),
       FUN = on_bands,
@@ -99,9 +105,9 @@ json2stars = function(json)
 
   raster_collection = json$data$raster_collection_tiles
   bt_list = lapply(X = as.list(1:num_time), FUN = on_times, raster_collection, proj_string)
-
+  cat("\n")
   print(Sys.time())
-  cat("Finished converting JSON to Raster objects!\n")
+  cat("Finished converting JSON to Raster objects!\n\n")
 
   stars_obj = NULL
   print(Sys.time())
