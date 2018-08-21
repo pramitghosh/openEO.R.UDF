@@ -34,24 +34,7 @@ tile2raster = function(tile, time_num, proj)
   xyz$y = rep(seq(from = y, to = ymax - resy/2, by = resy), xtot)
   xyz$z = rapply(object = tile$data[[time_num]], f = unlist)
 
-  # while(x < xmax)
-  # {
-  #   i = i + 1
-  #   j = 0
-  #   y = ymin + resy/2
-  #   while(y < ymax)
-  #   {
-  #     j = j + 1
-  #     xyz$x[(i - 1) * ytot + j] = x
-  #     xyz$y[(i - 1) * ytot + j] = y
-  #     xyz$z[(i - 1) * ytot + j] = tile$data[[time_num]][[i]][[j]]
-  #     y = y + resy
-  #   }
-  #   x = x + resx
-  # }
-
-  r = rasterFromXYZ(xyz, crs = proj)
-  r
+  rasterFromXYZ(xyz, crs = proj)
 }
 
 json2stars = function(json)
@@ -72,16 +55,6 @@ json2stars = function(json)
 
   # #Todo: Get rid of the nested for loops below and in `tile2raster()`
   # #Todo: Think about using dataframes/martices
-  # for(band_num in 1:num_bands)
-  # {
-  #   cat(paste(Sys.time(), "; Processing Band: ", band_num, "; ", sep = ""))
-  #   tile = json$data$raster_collection_tiles[[band_num]]
-  #   for(time_num in 1:num_time)
-  #   {
-  #     cat(paste(Sys.time(), "; Time: ", time_num, "...\n", sep = ""))
-  #     bt_list[[time_num]] = c(bt_list[[time_num]], tile2raster(tile, time_num, proj_string))
-  #   }
-  # }
 
   on_bands = function(band_num, raster_collection, time_num, proj_string)
   {
@@ -139,7 +112,7 @@ json2stars = function(json)
     }
   }
   print(Sys.time())
-  cat("Converted JSON to stars object!\n")
+  cat("Converted JSON to stars object!\n\n")
   stars_obj
 }
 
@@ -173,14 +146,14 @@ run_script = function(stars_obj, dim_mod, script_file = "tmp_udf.R")
   } else
     stop("Script file is unavailable!")
   print(Sys.time())
-  cat("Applied UDF on stars object!\n")
+  cat("Applied UDF on stars object!\n\n")
   result
 }
 
 stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
 {
   print(Sys.time())
-  cat("Started converting stars object to JSON...\n")
+  cat("Started converting stars object to JSON...\n\n")
   json_out = json_in[["data"]] #Copying structure of JSON but only the element "data"
   # json_out$code = list()
   json_out$proj = attr(stars_obj, "dimensions")$x$refsys
@@ -239,7 +212,7 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
 
   calc_data = function(t, bands, stars_obj)
   {
-    print(paste(Sys.time(), "; Time: ", if(is.na(t)) 1 else t, "...\n", sep = ""))
+    cat(paste(Sys.time(), "; Time: ", if(is.na(t)) 1 else t, "...\n", sep = ""))
     bt_raster = if(!is.na(t))
                     as(if(!is.na(bands))
                       stars_obj[,,,bands,t, drop = TRUE] else
@@ -256,11 +229,9 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
   if(!is.na(tot_bands))
   {
     length(json_out$raster_collection_tiles) = tot_bands
-    # json_out$raster_collection_tiles = json_out$raster_collection_tiles[-c(tot_bands+1:length(json_out$raster_collection_tiles))]
     for(bands in 1:tot_bands)
     {
-      cat(paste(Sys.time(), "; Band: ", bands, "; ", sep = ""))
-      # tmp_extent = json_out$raster_collection_tiles[[bands]][["extent"]]
+      cat(paste(Sys.time(), "; Processing Band: ", bands, "...\n", sep = ""))
       json_out$raster_collection_tiles[[bands]]$extent = calc_extent(stars_obj, bands)
 
       times = as.numeric(dim(stars_obj)["time"])
@@ -279,84 +250,12 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
         json_out$raster_collection_tiles[[bands]]$end_times = as.list(NA)
         data = lapply(as.list(NA), calc_data, bands, stars_obj)
       }
-      # data = list()
-      # # if(!is.na(times)) length(data) = times else length(data) = 1
-      # if(is.na(times))
-      # {
-      #   print(Sys.time())
-      #   cat("Time: 1...\n")
-      #   bt_raster = as(stars_obj[,,,bands, drop = TRUE], "Raster")
-      #   bt_df = as.data.frame(bt_raster, xy = TRUE)
-      #   uy = unique(bt_df[,2])
-      #   y_list = list()
-      #   # length(y_list) = length(uy)
-      #   for(ys in uy)
-      #   {
-      #     ux = as.list(bt_df$x[bt_df$y == ys])
-      #     x_list = list()
-      #     for(xs in ux)
-      #       x_list = as.list(as.numeric(subset(bt_df, subset = bt_df$y == ys, select = "layer")[[1]]))
-      #
-      #     y_list = c(y_list, list(x_list))
-      #   }
-      #   data = c(data, list(y_list))
-      # } else
-      # {
-      #   # length(data) = times
-      #   # for(t in 1:times)
-      #   # {
-      #   #   cat(paste(Sys.time(), "; Time: ", t, "...\n", sep = ""))
-      #   #   bt_raster = as(stars_obj[,,,bands,t, drop = TRUE], "Raster")
-      #   #   bt_df = as.data.frame(bt_raster, xy = TRUE)
-      #   #   uy = unique(bt_df[,2])
-      #   #   y_list = list()
-      #   #   length(y_list) = length(uy)
-      #   #   uy = as.list(uy)
-      #   #   for(ys in uy)
-      #   #   {
-      #   #     ux = as.list(bt_df$x[bt_df$y == ys])
-      #   #     x_list = list()
-      #   #     for(xs in ux)
-      #   #       x_list = as.list(as.numeric(subset(bt_df, subset = bt_df$y == ys, select = "layer")[[1]]))
-      #   #
-      #   #     y_list = c(y_list, list(x_list))
-      #   #   }
-      #   #   data = c(data, list(y_list))
-      #   # }
-      #
-      #   # data = lapply(X = as.list(1:times),
-      #   #               FUN = calc_data,
-      #   #               # FUN = function(t)
-      #   #               #       {
-      #   #               #         print(paste(Sys.time(), "; Time: ", t, "...\n", sep = ""))
-      #   #               #         bt_raster = as(stars_obj[,,,bands,t, drop = TRUE], "Raster")
-      #   #               #         bt_df = as.data.frame(bt_raster, xy = TRUE)
-      #   #               #         uy = as.list(unique(bt_df[, 2]))
-      #   #               #         y_list = lapply(X = uy,
-      #   #               #                         calc_y,
-      #   #               #                         # FUN = function(ys)
-      #   #               #                         #       {
-      #   #               #                         #         # ux = as.list(bt_df$x[bt_df$y == ys])
-      #   #               #                         #         # x_list =
-      #   #               #                         #         list(as.numeric(subset(bt_df, subset = bt_df$y == ys, select = "layer")[[1]]))
-      #   #               #                         #         # x_list
-      #   #               #                         #       },
-      #   #               #                         bt_df
-      #   #               #                       )
-      #   #               #       },
-      #   #               bands,
-      #   #               stars_obj
-      #   #             )
-      #   data = lapply(as.list(1:times), calc_data, bands, stars_obj)
-      # }
       json_out$raster_collection_tiles[[bands]]$data = data
     }
   } else
   {
-    cat(paste(Sys.time(), "; Band: 1; ", sep = ""))
+    cat(paste(Sys.time(), "; Processing Band: 1;\n", sep = ""))
     length(json_out$raster_collection_tiles) = 1
-    # json_out$raster_collection_tiles = json_out$raster_collection_tiles[-c(2:length(json_out$raster_collection_tiles))]
-    # tmp_extent = json_out$raster_collection_tiles[[1]][["extent"]]
     json_out$raster_collection_tiles[[1]]$extent = calc_extent(stars_obj, NA)
 
     times = as.numeric(dim(stars_obj)["time"])
@@ -375,53 +274,12 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
       json_out$raster_collection_tiles[[1]]$end_times = as.list(NA)
       data = lapply(as.list(NA), calc_data, bands, stars_obj)
     }
-    # data = list()
-    # if(is.na(times))
-    # {
-    #   print(Sys.time())
-    #   cat("Time: 1...\n")
-    #   bt_raster = as(stars_obj[,,], "Raster")
-    #   bt_df = as.data.frame(bt_raster, xy = TRUE)
-    #   uy = unique(bt_df[,2])
-    #   y_list = list()
-    #   # length(y_list) = length(uy)
-    #   for(ys in uy)
-    #   {
-    #     ux = as.list(bt_df$x[bt_df$y == ys])
-    #     x_list = list()
-    #     for(xs in ux)
-    #       x_list = as.list(as.numeric(subset(bt_df, subset = bt_df$y == ys, select = "layer")[[1]]))
-    #
-    #     y_list = c(y_list, list(x_list))
-    #   }
-    #   data = c(data, list(y_list))
-    # } else
-    # {
-    #   for(t in 1:times)
-    #   {
-    #     cat(paste(Sys.time(), "; Time: ", t, "...\n", sep = ""))
-    #     bt_raster = as(stars_obj[,,,t, drop = TRUE], "Raster")
-    #     bt_df = as.data.frame(bt_raster, xy = TRUE)
-    #     uy = unique(bt_df[,2])
-    #     y_list = list()
-    #     # length(y_list) = length(uy)
-    #     for(ys in uy)
-    #     {
-    #       ux = as.list(bt_df$x[bt_df$y == ys])
-    #       x_list = list()
-    #       for(xs in ux)
-    #         x_list = as.list(as.numeric(subset(bt_df, subset = bt_df$y == ys, select = "layer")[[1]]))
-    #
-    #       y_list = c(y_list, list(x_list))
-    #     }
-    #     data = c(data, list(y_list))
-    #   }
-    # }
     json_out$raster_collection_tiles[[1]]$data = data
   }
   # For writing to disk
   # write_json(x = json_out, path = json_out_file, auto_unbox = TRUE, pretty = TRUE)
   # json_response = toJSON(x = json_out, auto_unbox = TRUE, pretty = TRUE)
+  cat("\n")
   print(Sys.time())
   cat("Converted resulting stars object back to JSON!\n")
   # json_response
@@ -450,7 +308,7 @@ run_UDF.json = function(req)
 
   stars_in = json2stars(json_in)
   stars_out = run_script(stars_obj = stars_in, dim_mod = dim_mod)
-  json_out = stars2json(stars_obj = stars_out, json_in = json_in)#, json_out_file = "udf_response.json")
+  json_out = stars2json(stars_obj = stars_out, json_in = json_in)
 
   # Generate HTTP response for "backend" with body as the JSON in the file `json_out_file`
   print(Sys.time())
