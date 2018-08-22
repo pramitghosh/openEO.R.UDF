@@ -2,13 +2,16 @@ json2script = function(json)
 {
   lang = json$code$language
   script = json$code$source
+  script = gsub("\"", "'", script)
+  script = gsub("\r", "", script)
   # Todo: Source the string `script` directly without writing it to disk
   # Note: Need to remove escape characters in `script`
-  sink(file = "tmp_udf.R")
-  cat(script)
-  sink()
+  # sink(file = "tmp_udf.R")
+  # cat(script)
+  # sink()
   print(Sys.time())
   cat("Extracted script for JSON!\n")
+  script
 }
 
 tile2raster = function(tile, time_num, proj)
@@ -116,7 +119,7 @@ json2stars = function(json)
   stars_obj
 }
 
-run_script = function(stars_obj, dim_mod, script_file = "tmp_udf.R")
+run_script = function(stars_obj, dim_mod, script_text)
 {
   print(Sys.time())
   cat("Started executing UDF on stars object...\n")
@@ -136,10 +139,10 @@ run_script = function(stars_obj, dim_mod, script_file = "tmp_udf.R")
     all_dim[3] = 3 else
       all_dim[3] = NA
   all_dim[4] = 4 #Currently assuming `stars_obj` has rasters
-
-  if(file.exists(script_file))
+  parsed_script = parse(text = script_text)
+  if(is.expression(parsed_script))
   {
-    function_name = source(script_file)$value
+    function_name = eval(parsed_script)
     result = st_apply(stars_obj, FUN = function_name, MARGIN = all_dim[-c(dim_mod)])
     new_dim = all_dim
     new_dim[dim_mod] = NA
@@ -299,7 +302,7 @@ run_UDF.json = function(req)
   print(Sys.time())
   cat("Started executing at endpoint /udf\n")
   json_in = fromJSON(req$postBody, simplifyVector = FALSE)
-  json2script(json_in)
+  script_text = json2script(json_in)
 
   # udf_func = json2fname(json_in)
   # dim_mod = json2dim_mod(json_in)
@@ -307,7 +310,7 @@ run_UDF.json = function(req)
   dim_mod = 4         #Testing
 
   stars_in = json2stars(json_in)
-  stars_out = run_script(stars_obj = stars_in, dim_mod = dim_mod)
+  stars_out = run_script(stars_obj = stars_in, dim_mod = dim_mod, script_text = script_text)
   json_out = stars2json(stars_obj = stars_out, json_in = json_in)
 
   # Generate HTTP response for "backend" with body as the JSON in the file `json_out_file`
