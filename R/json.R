@@ -91,7 +91,6 @@ json2stars = function(json)
   for(time_num in 1:num_time)
   {
     as_stars = lapply(X = bt_list[[time_num]], FUN = st_as_stars)
-    # as_stars = c(as_stars[[1]], as_stars[[2]], along = "band") #Vectorized implementation of `stars.c()` not working!
     stars_bands = as_stars[[1]]
     if(length(as_stars > 1))
       for(times in 2:length(as_stars))
@@ -289,11 +288,13 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
   json_out
 }
 
-json2fname = function(json_in)
-  return(json_in$code$fname)
-
-json2dim_mod = function(json_in)
-  return(json_in$code$dim_mod)
+json2dim_mod = function(json_dim)
+{
+  dim_num = NA
+  if(json_dim == "band") dim_num = 3
+  if(json_dim == "time") dim_num = 4
+  dim_num
+}
 
 #' @serializer unboxedJSON
 #' @post /udf
@@ -304,9 +305,7 @@ run_UDF.json = function(req)
   json_in = fromJSON(req$postBody, simplifyVector = FALSE)
   script_text = json2script(json_in)
 
-  # udf_func = json2fname(json_in)
-  # dim_mod = json2dim_mod(json_in)
-  # udf_func = "median" #Testing
+  # dim_mod = apply(as.array(json_in$code$dim_mod), 1, json2dim_mod)
   dim_mod = 4         #Testing
 
   stars_in = json2stars(json_in)
