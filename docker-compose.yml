@@ -1,0 +1,10 @@
+version: '3'
+services:
+    openeo-r-udf-server:
+        build: 
+            context: .
+            dockerfile: DOCKERFILE
+        image: openeo-r-udf-server:0.0.1
+        container_name: openeo-r-udf
+        ports:
+            - "8010:8010"
