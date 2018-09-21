@@ -146,10 +146,22 @@ run_script = function(stars_obj, dim_mod, script_text)
     new_dim = all_dim
     new_dim[dim_mod] = NA
   } else
-    stop("Script file is unavailable!")
+    stop("Script text is unavailable or is not a valid expression!")
   print(Sys.time())
   cat("Applied UDF on stars object!\n\n")
   result
+}
+
+run_script_raw = function(stars_obj, script_text)
+{
+  parsed_script = parse(text = script_text)
+  if(is.expression(parsed_script))
+  {
+    function_name = eval(parsed_script)
+    result = function_name(stars_obj)
+  } else stop("Script text is unavailable or is not a valid expression!")
+  if(class(result) == "stars")
+    return(result) else return(stars_obj)
 }
 
 stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
@@ -316,4 +328,16 @@ run_UDF.json = function(req)
   print(Sys.time())
   cat("Generating response to HTTP request")
   json_out
+}
+
+#' @serializer unboxedJSON
+#' @post /udf/raw
+run_UDF.json.raw = function(req)
+{
+  json_in = fromJSON(req$postBody, simplifyVector = FALSE)
+  script_text = json2script(json_in)
+
+  stars_in = json2stars(json_in)
+  stars_out = run_script_raw(stars_obj = stars_in, script_text = script_text)
+  stars2json(stars_obj = stars_out, json_in = json_in)
 }
