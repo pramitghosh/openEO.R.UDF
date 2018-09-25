@@ -1,7 +1,7 @@
 Package: openeo.R.UDF
 Type: Package
 Title: Applies a User-Defined Function (UDF) on a stars object created from generic (GeoTIFF) files
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(person("Pramit", "Ghosh", email = "pramitghosh@uni-muenster.de", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1852-5951")),
               person("Florian", "Lahn", email = "florian.lahn@uni-muenster.de", role = c("aut", "ctb")))
 Maintainer: Pramit Ghosh <pramitghosh@uni-muenster.de>
