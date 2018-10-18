@@ -47,8 +47,8 @@ json2stars = function(json)
   proj_string = json$data$proj
   num_bands = length(json$data$raster_collection_tiles)
   num_time = length(json$data$raster_collection_tiles[[1]]$start_times)
-  num_bands = 3 #Testing
-  num_time = 2 #Testing
+  # num_bands = 3 #Testing
+  # num_time = 2 #Testing
 
   bt_list = list()
   length(bt_list) = num_time
@@ -339,5 +339,10 @@ run_UDF.json.raw = function(req)
 
   stars_in = json2stars(json_in)
   stars_out = run_script_raw(stars_obj = stars_in, script_text = script_text)
-  stars2json(stars_obj = stars_out, json_in = json_in)
+  json_out = stars2json(stars_obj = stars_out, json_in = json_in)
+
+  #Generate HTTP response for "backend"
+  print(Sys.time())
+  cat("Generating resposne to HTTP request")
+  json_out
 }
