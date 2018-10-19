@@ -4,7 +4,5 @@ install.packages("devtools",dependencies=TRUE)
 library(devtools)
 
 install.packages("plumber",dependencies=TRUE)
-install_github("r-spatial/stars",dependencies=TRUE)
-
-
+install.packages("stars", dependencies = TRUE)
 
