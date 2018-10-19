@@ -99,13 +99,18 @@ json2stars = function(json)
       }
     if(is.null(stars_obj))
     {
-      stars_obj = c(stars_bands, along = list("time" = timestamps_padded[time_num:time_num+1]))
-      # stars_obj = c(stars_bands, dim_name = "time", values = timestamps_padded[time_num:time_num+1])
+      stars_obj = try(c(stars_bands, along = list("time" = timestamps_padded[time_num:time_num+1])), silent = T)
+      if(class(stars_obj) == "try-error")
+        stars_obj = c(stars_bands, dim_name = "time", values = timestamps_padded[time_num:time_num+1])
+
       attr(stars_obj, "dimensions")[["time"]]$offset = timestamps[1]
       attr(stars_obj, "dimensions")[["time"]]$delta = timestamps[time_num+1] - timestamps[time_num]
     } else
     {
-      tmp_stars = c(stars_bands, along = list("time" = timestamps_padded[time_num:time_num+1]))
+      tmp_stars = try(c(stars_bands, along = list("time" = timestamps_padded[time_num:time_num+1])), silent = T)
+      if(class(tmp_stars) == "try-error")
+        tmp_stars = c(stars_bands, dim_name = "time", values = timestamps_padded[time_num:time_num+1])
+
       attr(tmp_stars, "dimensions")[["time"]]$offset = timestamps[time_num]
       stars_obj = c(stars_obj, tmp_stars)
       # Fixing time of final `stars` object manually
@@ -271,7 +276,7 @@ stars2json = function(stars_obj, json_in)#, json_out_file = "udf_response.json")
     cat(paste(Sys.time(), "; Processing Band: 1;\n", sep = ""))
     length(json_out$raster_collection_tiles) = 1
     json_out$raster_collection_tiles[[1]]$extent = calc_extent(stars_obj, NA)
-
+    bands = NA
     times = as.numeric(dim(stars_obj)["time"])
     if(!is.na(times))
     {
@@ -318,7 +323,9 @@ run_UDF.json = function(req)
   script_text = json2script(json_in)
 
   # dim_mod = apply(as.array(json_in$code$dim_mod), 1, json2dim_mod)
-  dim_mod = 4         #Testing
+  dim_mod = try(json2dim_mod(json_in$code$alt_dim), silent = T)
+  if(class(dim_mod) == "try-error")
+    dim_mod = 4 # Testing
 
   stars_in = json2stars(json_in)
   stars_out = run_script(stars_obj = stars_in, dim_mod = dim_mod, script_text = script_text)
@@ -345,4 +352,43 @@ run_UDF.json.raw = function(req)
   print(Sys.time())
   cat("Generating resposne to HTTP request")
   json_out
+}
+
+# Florian's subsetting hack re-introduced
+# this is just a temporal fix for an issue during subsetting stars objects with an variable that was defined not in the basenv environment
+"[.stars" = function(x, i = TRUE, ..., drop = FALSE, crop = TRUE) {
+  missing.i = missing(i)
+  # special case:
+  if (! missing.i && inherits(i, c("sf", "sfc", "bbox")))
+    return(st_crop(x, i, crop = crop))
+
+  mc <- match.call(expand.dots = TRUE)
+  # select list elements from x, based on i:
+  d = attr(x, "dimensions")
+  ed = stars:::expand_dimensions.dimensions(d)
+  x = unclass(x)[i]
+  # selects also on dimensions:
+  if (length(mc) > 3) {
+    mc[[1]] <- `[`
+    if (! missing(i))
+      mc[[3]] <- NULL # remove i
+    mc[["drop"]] = FALSE
+    for (i in names(x)) {
+      mc[[2]] = as.name(i)
+      x[[i]] = eval(mc, x, enclos = parent.frame())
+    }
+    mc0 = mc[1:3] # "[", x, first dim
+    j = 3 # first dim
+    for (i in names(d)) {
+      mc0[[2]] = as.name(i)
+      mc0[[3]] = mc[[j]]
+      mc0[["values"]] = ed[[i]]
+      d[[i]] = eval(mc0, d, enclos = parent.frame())
+      j = j + 1
+    }
+  }
+  if (drop)
+    adrop(st_as_stars(x, dimensions = d))
+  else
+    st_as_stars(x, dimensions = d)
 }
