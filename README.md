@@ -1,37 +1,75 @@
-# OpenEO.R.UDF
+# openEO.R.UDF
 
-This package reads generic (currently GeoTIFF only; but will support non-raster data (e.g. feature data) in the near future as well) files to a stars object, applies users' custom function on it, and writes the resultant files back to disk. This package acts as a tool for users to parse the files written to disk by the backend so that their (users') custom functions (UDFs) could be applied. In the same way, the results from the UDF are written back to disk in a consistent format parsable by the backend.
+## Introduction
+This repository contains a R package for implementing the concept of User-Defined Functions for processing Earth Observation (EO) data in cloud backends. This will allow users to run their custom code written in R to be executed on EO data such as satellite imageries with the help of processing backends conforming to the openEO API. The openEO API is being developed as part of the project ["openEO"](https://github.com/Open-EO).
 
-### General strategy
-This package has to be loaded from the user's R script file (which should also contain the UDF definition) and the UDF to be applied has to be called as an argument to the function `run_UDF()` defined in this package which will apply it on a `stars` object created from generic files on disk. Metadata regarding these files (e.g. path, band, time etc.) are looked up from an ASCII "legend" file in CSV format which is written to disk along with the actual data by the [`write_generics()` function](https://github.com/pramitghosh/openeo-r-backend/blob/b7da77f87a90ba49d79cafd17a634f6117dccc2f/R/prepare_UDF.R#L13) in the backend.
+### Background
+This repository is meant to be part of the H2020 funded project [openEO](http://openeo.org). The objective of this project is to develop an uniform API to allow processing of Earth Observation (EO) data in cloud-based processing backends from various client nodes. In this API framework, User-Defined Functions (UDFs) is a concept that would allow users to run their own scripts on EO data in these cloud backends.
 
-Once the UDF has been applied on the data, the result is written back to disk in the form of generic files - e.g. GeoTIFF for rasters. A corresponding "legend" file is also generated containing metadata regarding the output files, which could be then used to read the files back in the backend. The way the output is written to disk (e.g. format, directory structure etc.) are determined by the dimensionality of the UDF result and will be reflected by the corresponding "legend" file which acts as a look-up table with metadata.
+### User-Defined Functions
+The UDFs are implemented by developing an UDF API which work hand-in-hand with the openEO core API. The main idea is that there are UDF (web-) services which could be used by the backends as required. The typical workflow is:
 
-## Dependencies
-This R package needs the package `stars` which is not on CRAN yet. The `stars` package is available here: <https://github.com/r-spatial/stars>. Therefore, this dependency needs to be installed in the environment first by:
+1. The user uploads his/her script from the client nodes to the backends along with the process graph
+2. The backend executes the process graph and encounters the UDF in the process graph
+3. The backend seeks the services of the UDF service to execute the user's script and sends the script and intermediate data to the service through appropriate means (file-based service, RESTful web-service etc.)
+4. The UDF service executes the script on the data and sends the result back to the backend.
+5. The backend receives the data and continues executing the process graph until the final result is obtained.
+6. The backend sends the completed result to the user's client node.
 
-```
-library(devtools)
+These UDF service is being developed for two different languages - Python and R. This repository concerns with the implementation using R.
+
+### Architecture
+
+![openEO UDF Architecture](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/openeo_github.png)
+
+In the openEO API, the different clients interact with the different backends through the openEO API which acts as a common language understood by both the clients and the backends. The UDF service is not accessible to the clients directly but only through the backends and hence the UDF service's internal operations are abstracted to the user.
+
+## Installation
+
+### Dependencies
+This R package has the following dependencies
+ * stars
+ * jsonlite
+ * plumber
+ * raster
+
+These can be installed by running the following:
+
+```r
+install.packages(c("devtools", "jsonlite", "plumber", "raster"), dependencies = TRUE)
 install_github("r-spatial/stars")
 ```
 
-## Installation
-This package can be currently installed by
+### Installing `openEO.R.UDF`
+This package can then be installed using
 
+```r
+install_github("pramitghosh/openEO.R.UDF")
 ```
-install_github("pramitghosh/openeo.R.UDF")
+
+### Using Docker
+Docker provides a virtual containerized environment for running software. In order to install this R package in a Docker environment, please follow these steps:
+
+1. Install Docker on your machine. The installation instructions vary according to the Operating System. Detailed instructions for all common Operating Systems may be found here: <https://docs.docker.com/install/>.
+2. Make sure that Docker has been installed correctly using the following command. Details on containers and Docker version will be shown.
+```bash
+docker info
+```
+3. Test whether installation using Docker is working correctly. A hello message should be printed on screen. 
+```bash
+docker run hello-world
+```
+4. Run it using the following command. If this image is not present on the local machine, it will be pulled from [Docker Hub](https://hub.docker.com/r/pramitghosh/openeo.r.udf/).
+```bash
+docker run -p 5384:8010 pramitghosh/openeo.r.udf
+```
+In the above command, `-p` re-routes the port where the service will be available. In the Docker image itself, this is available on port 8010. It can be mapped to any port of choice on the host (here it is mapped to port 5384). Instead of running, the image can be pulled from Docker Hub using
+```bash
+docker pull pramitghosh/openeo.r.udf
 ```
 
 ## Usage
-**Please note that this section is likely to change during the development of this package. The documentation currently associated with this package might be outdated but acts as a general reference for the idea**
+This package is intended to be used as part of the openEO API. The package works along with the different backends and are not supposed to accessible directly by the client. However, for testing, please refer to the the Wiki pages of this repository [here](https://github.com/pramitghosh/openEO.R.UDF/wiki).
 
-This package loads GeoTIFF files from the disk by looking up an legend file provided in a CSV format containing metadata regarding the files into a `stars` object. It applies a function defined and specified by the user and writes the results back to disk in a directory specified by the user.
-
-```
-run_UDF(legend_name = <Name of the legend file with path>, function_name = <Name of the UDF defined by the user>, drop_dim = <Dimension index of the dimension to be dropped>, in_dim = <Dimensionality of the incoming Collection object>, out_dir = <Name of the new directory where resultant file(s) are to be written>)
-```
-An example of using `run_UDF()` as a standalone function on the "legend" file could be:
-```
-run_UDF(legend_name = "../../../sources/scratch/disk_1/legend.csv", function_name = udf_func, drop_dim = 4)
-```
-More details can be found in the function documentation.
+### Releases
+This repository has two versions. The first pre-release version v0.0.1 contains a proof-of-concept implementation of a file-based service. The subsequent tagged version, v0.0.2, implements a RESTful web service to run user-defined functions on EO data. Please note, that the Docker image is meant to be used for this web service only.
