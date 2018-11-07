@@ -33,6 +33,6 @@ bin_read_legend = function(legend)
 
 bin_read_body = function(req)
 {
-  post_body = fromJSON(txt = "data/binary_udf/post_body.json", simplifyVector = T)
+  # post_body = fromJSON(txt = "data/binary_udf/post_body.json", simplifyVector = T)
 }
 
