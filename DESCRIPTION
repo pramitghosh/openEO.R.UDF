@@ -15,7 +15,8 @@ Depends:
   stars (>= 0.1-1),
   jsonlite (>= 1.5),
   plumber (>= 0.4.6),
-  raster (>= 2.6-7)
+  raster (>= 2.6-7),
+  base64enc (>= 0.1-3)
 Imports:
   utils
 RoxygenNote: 6.0.1
