@@ -17,8 +17,8 @@ bin_unzip_string = function(string = "data/binary_udf/bin_data", file = TRUE)
   if(file)
     base64decode(file = string, output = file("temp.zip", "wb")) else
       base64decode(what = string, output = file("temp.zip", "wb"))
-  # unzip(zipfile = "temp.zip", overwrite = T, exdir = "disk", unzip = "unzip") # Works with Windows
-  system("mkdir disk && cd disk && jar -xvf ../temp.zip", ignore.stdout = T) # Works with Linux; requires 'fastjar'
+  unzip(zipfile = "temp.zip", overwrite = T, exdir = "disk") # Works with Windows
+  # system("mkdir disk && cd disk && jar -xvf ../temp.zip", ignore.stdout = T) # Works with Linux; requires 'fastjar'
   file.remove("temp.zip")
 }
 
@@ -40,22 +40,34 @@ bin_read_body = function(req)
   legend = fromJSON(post_body$legend)
   legend$timestamp = as.POSIXct(legend$timestamp)
   stars_in = bin_read_legend(legend)
+  unlink("disk", recursive = TRUE)
   script = json2script(post_body$code)
   stars_out = run_script_raw(stars_obj = stars_in, script_text = script)
 
   time_out = dim(stars_out)[["time"]]
   band_out = dim(stars_out)[["band"]]
-  legend_out = legend[1:(time_out * band_out), ]
+  legend_out = matrix(ncol = ncol(legend), nrow = time_out * band_out)
+  colnames(legend_out) = colnames(legend)
+  legend_out = as.data.frame(legend_out)
+
   out_dir = "results"
   dir.create(out_dir)
+  time_vals = attr(stars_out, "dimensions")[["time"]]$values
+  band_vals = attr(stars_out, "dimensions")[["band"]]$values
   for(time_num in 1:time_out)
   {
     out_path = paste(out_dir, "/t_", time_num, sep = "")
     dir.create(out_path)
     for(band_num in 1:band_out)
     {
-      # st_write(obj = stars_out[,,,band_num, time_num], dsn = paste(out_path, "/b_", band_num, ".tif",  sep = ""))
+      filename = paste(out_path, "/b_", band_num, ".tif",  sep = "")
+      stars_subset = stars_out[,,,band_num, time_num, drop = T]
+      st_write(obj = stars_subset, dsn = filename)
+      index = ((time_num - 1) * band_out) + band_num
+      print(index)
+      legend_out[index,] = c(index, filename, as.numeric(time_num), as.character.Date(time_vals[time_num]), as.numeric(band_num), band_vals[band_num])
     }
   }
+  out_legend_json = toJSON(legend_out, dataframe = "rows", pretty = T)
 }
 
