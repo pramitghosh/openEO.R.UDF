@@ -33,9 +33,13 @@ bin_read_legend = function(legend)
   stars_obj = read_stars(filewpaths, along = list(band = bands, time = timestamps))
 }
 
-bin_read_body = function(req)
+#' @serializer unboxedJSON
+#' @post /udf/binary
+run_UDF.binary = function(req)
 {
-  post_body = fromJSON(txt = "data/binary_udf/post_body.json")
+  post_body = fromJSON(txt = "data/binary_udf/post_body.json") # for testing locally
+  # post_body = req$postBody # for use with plumber
+
   bin_unzip_string(string = post_body$base64str, file = FALSE)
   legend = fromJSON(post_body$legend)
   legend$timestamp = as.POSIXct(legend$timestamp)
@@ -68,6 +72,17 @@ bin_read_body = function(req)
       legend_out[index,] = c(index, filename, as.numeric(time_num), as.character.Date(time_vals[time_num]), as.numeric(band_num), band_vals[band_num])
     }
   }
-  out_legend_json = toJSON(legend_out, dataframe = "rows", pretty = T)
+  # out_legend_json = toJSON(legend_out, dataframe = "rows", pretty = TRUE)
+  # out_legend_json = gsub('\"', '"', out_legend_json)
+
+  filepaths = list.files("results", full.names = T, recursive = T)
+  zip(zipfile = "results.zip", files = filepaths, recurse = TRUE)
+  unlink("results", recursive = TRUE)
+  out_bin_string = base64encode(what = "results.zip")
+  file.remove("results.zip")
+  response = list(legend = legend_out, base64str = out_bin_string)
+  # response = append(response, list(base64str = out_bin_string))
+  post_response_body = toJSON(response, dataframe = "rows")
+  post_response_body = gsub('\"', '"', post_response_body)
 }
 

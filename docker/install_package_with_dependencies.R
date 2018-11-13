@@ -5,4 +5,6 @@ library(devtools)
 
 install.packages("plumber",dependencies=TRUE)
 install.packages("stars", dependencies = TRUE)
+install.packages("base64enc", dependencies = TRUE)
+install.packages("zip", dependencies = TRUE)
 
