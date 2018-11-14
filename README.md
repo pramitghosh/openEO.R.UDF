@@ -32,12 +32,13 @@ This R package has the following dependencies
  * jsonlite
  * plumber
  * raster
+ * base64enc
+ * zip
 
 These can be installed by running the following:
 
 ```r
-install.packages(c("devtools", "jsonlite", "plumber", "raster"), dependencies = TRUE)
-install_github("r-spatial/stars")
+install.packages(c("stars", "jsonlite", "plumber", "raster", "base64enc", "zip"), dependencies = TRUE)
 ```
 
 ### Installing `openEO.R.UDF`
