@@ -314,7 +314,7 @@ json2dim_mod = function(json_dim)
 }
 
 #' @serializer unboxedJSON
-#' @post /udf
+#' @post /
 run_UDF.json = function(req)
 {
   print(Sys.time())
@@ -338,7 +338,7 @@ run_UDF.json = function(req)
 }
 
 #' @serializer unboxedJSON
-#' @post /udf/raw
+#' @post /raw
 run_UDF.json.raw = function(req)
 {
   json_in = fromJSON(req$postBody, simplifyVector = FALSE)
