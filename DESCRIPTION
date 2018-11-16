@@ -12,7 +12,7 @@ Encoding: UTF-8
 LazyData: true
 Depends:
   R (>= 3.4.4),
-  stars (>= 0.1-1),
+  stars (>= 0.2-0),
   jsonlite (>= 1.5),
   plumber (>= 0.4.6),
   raster (>= 2.6-7),
