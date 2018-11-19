@@ -91,12 +91,16 @@ json2stars = function(json)
   for(time_num in 1:num_time)
   {
     as_stars = lapply(X = bt_list[[time_num]], FUN = st_as_stars)
-    stars_bands = as_stars[[1]]
-    if(length(as_stars > 1))
-      for(times in 2:length(as_stars))
-      {
-        stars_bands = c(stars_bands, as_stars[[times]], along = "band")
-      }
+
+    # stars_bands = as_stars[[1]]
+    # if(length(as_stars > 1))
+    #   for(times in 2:length(as_stars))
+    #   {
+    #     stars_bands = c(stars_bands, as_stars[[times]], along = "band")
+    #   }
+    append_stars = append(as_stars, values = c(along = "band"))
+    stars_bands = do.call(c, append_stars)
+
     if(is.null(stars_obj))
     {
       stars_obj = try(c(stars_bands, along = list("time" = timestamps_padded[time_num:time_num+1])), silent = T)
@@ -314,7 +318,7 @@ json2dim_mod = function(json_dim)
 }
 
 #' @serializer unboxedJSON
-#' @post /
+#' @post /udf
 run_UDF.json = function(req)
 {
   print(Sys.time())
@@ -338,7 +342,7 @@ run_UDF.json = function(req)
 }
 
 #' @serializer unboxedJSON
-#' @post /raw
+#' @post /udf/raw
 run_UDF.json.raw = function(req)
 {
   json_in = fromJSON(req$postBody, simplifyVector = FALSE)

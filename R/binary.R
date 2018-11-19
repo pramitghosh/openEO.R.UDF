@@ -40,7 +40,7 @@ bin_read_legend = function(legend)
 }
 
 #' @serializer unboxedJSON
-#' @post /binary
+#' @post /udf/binary
 run_UDF.binary = function(req)
 {
   cat("Reading JSON...\n")
