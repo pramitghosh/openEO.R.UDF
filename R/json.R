@@ -88,6 +88,7 @@ json2stars = function(json)
   stars_obj = NULL
   print(Sys.time())
   cat("Starting to convert Raster to stars objects...\n")
+  stars_bands = list()
   for(time_num in 1:num_time)
   {
     as_stars = lapply(X = bt_list[[time_num]], FUN = st_as_stars)
@@ -99,29 +100,35 @@ json2stars = function(json)
     #     stars_bands = c(stars_bands, as_stars[[times]], along = "band")
     #   }
     append_stars = append(as_stars, values = c(along = "band"))
-    stars_bands = do.call(c, append_stars)
-
-    if(is.null(stars_obj))
-    {
-      stars_obj = try(c(stars_bands, along = list("time" = timestamps_padded[time_num:time_num+1])), silent = T)
-      if(class(stars_obj) == "try-error")
-        stars_obj = c(stars_bands, dim_name = "time", values = timestamps_padded[time_num:time_num+1])
-
-      attr(stars_obj, "dimensions")[["time"]]$offset = timestamps[1]
-      attr(stars_obj, "dimensions")[["time"]]$delta = timestamps[time_num+1] - timestamps[time_num]
-    } else
-    {
-      tmp_stars = try(c(stars_bands, along = list("time" = timestamps_padded[time_num:time_num+1])), silent = T)
-      if(class(tmp_stars) == "try-error")
-        tmp_stars = c(stars_bands, dim_name = "time", values = timestamps_padded[time_num:time_num+1])
-
-      attr(tmp_stars, "dimensions")[["time"]]$offset = timestamps[time_num]
-      stars_obj = c(stars_obj, tmp_stars)
-      # Fixing time of final `stars` object manually
-      attr(stars_obj, "dimensions")[["time"]]$to = dim(stars_obj)[["time"]]
-      attr(stars_obj, "dimensions")[["time"]]$delta = mean(diff(timestamps))
-    }
+    stars_bands[[time_num]] = do.call(c, append_stars)
   }
+  stars_obj = append(stars_bands, values = c(along = "time"))
+  stars_obj = do.call(c, stars_obj)
+  attr(stars_obj, "dimensions")$time$values = timestamps
+  attr(stars_obj, "dimensions")$time$offset = timestamps[1]
+  attr(stars_obj, "dimensions")$time$delta = mean(diff(timestamps))
+
+    # if(is.null(stars_obj))
+    # {
+    #   stars_obj = try(c(stars_bands, along = list("time" = timestamps_padded[time_num:time_num+1])), silent = T)
+    #   if(class(stars_obj) == "try-error")
+    #     stars_obj = c(stars_bands, dim_name = "time", values = timestamps_padded[time_num:time_num+1])
+    #
+    #   attr(stars_obj, "dimensions")[["time"]]$offset = timestamps[1]
+    #   attr(stars_obj, "dimensions")[["time"]]$delta = timestamps[time_num+1] - timestamps[time_num]
+    # } else
+    # {
+    #   tmp_stars = try(c(stars_bands, along = list("time" = timestamps_padded[time_num:time_num+1])), silent = T)
+    #   if(class(tmp_stars) == "try-error")
+    #     tmp_stars = c(stars_bands, dim_name = "time", values = timestamps_padded[time_num:time_num+1])
+    #
+    #   attr(tmp_stars, "dimensions")[["time"]]$offset = timestamps[time_num]
+    #   stars_obj = c(stars_obj, tmp_stars)
+    #   # Fixing time of final `stars` object manually
+    #   attr(stars_obj, "dimensions")[["time"]]$to = dim(stars_obj)[["time"]]
+    #   attr(stars_obj, "dimensions")[["time"]]$delta = mean(diff(timestamps))
+    # }
+  # }
   print(Sys.time())
   cat("Converted JSON to stars object!\n\n")
   stars_obj
