@@ -1,12 +1,16 @@
-Package: openeo.R.UDF
+Package: openEO.R.UDF
 Type: Package
-Title: Applies a User-Defined Function (UDF) on a stars object created from generic (GeoTIFF) files
+Title: User-defined functions (UDF) in R on Earth observation data in cloud back-ends
 Version: 0.0.2
-Authors@R: c(person("Pramit", "Ghosh", email = "pramitghosh@uni-muenster.de", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1852-5951")),
-              person("Florian", "Lahn", email = "florian.lahn@uni-muenster.de", role = c("aut", "ctb")))
+Date: 2018-09-25
+Authors@R: c(person(given = "Pramit", family = "Ghosh", email = "pramitghosh@uni-muenster.de", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1852-5951")),
+              person(given = "Florian", family = "Lahn", email = "florian.lahn@uni-muenster.de", role = c("aut", "ctb")))
 Maintainer: Pramit Ghosh <pramitghosh@uni-muenster.de>
-Description: Reads generic GeoTIFF files to a stars object, applies users' custom function on it, and writes the resultant files back to disk.
-    This package acts as a tool for users to parse the files written to disk by the OpenEO R backend so that their custom functions (UDFs) could be applied.
+Description: Reads Earth Observation (EO) data to a stars object, applies users' custom function on it,
+    and computes the results. This package is meant to be used by cloud back-ends compliant with the openEO API
+    for user-defined functions (UDFs) and is interfaced with the help of file-based implementations and RESTful web services.
+URL: https://github.com/pramitghosh/openEO.R.UDF
+BugReports: https://github.com/pramitghosh/openEO.R.UDF/issues
 License: Apache License
 Encoding: UTF-8
 LazyData: true
