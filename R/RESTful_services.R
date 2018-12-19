@@ -521,6 +521,7 @@ run_UDF.binary = function(req)
   cat("Created body for POST response\n")
   post_response_body = toJSON(response, dataframe = "rows")
   cat("Converted R object to JSON for response\n")
-  post_response_body = gsub('\"', '"', post_response_body)
+  # post_response_body = gsub('\"', '"', post_response_body)
+  post_response_body
 }
 
