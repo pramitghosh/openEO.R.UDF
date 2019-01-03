@@ -11,51 +11,54 @@ read_generics = function(legend_file, dimensionality)
   if(dimensionality[5] == 1) #If raster
   {
     file_list = paste(legend_dir, as.character(legend_df$filename), sep = "/")
-    time_list = as.POSIXct(unique(legend_df$timestamp))
-    band_list = as.character(unique(legend_df$band))
-
-    time_cols = matrix(nrow = length(band_list), ncol = length(time_list))
-    num_files = dim(legend_df)[1]
-    for(tifs in 1:num_files)
-    {
-      time_cols[legend_df$band_index[tifs], legend_df$time_index[tifs]] = paste(legend_dir, as.character(legend_df$filename[tifs]), sep = "/")
-    }
-
-    stars_list = list()
-    length(stars_list) = length(time_list)
-    store_as_stars = function(ind_cols)
-    {
-      t_i = read_stars(.x = ind_cols, along = "band")
-    }
-
-    # Since a time duration is needed to calculate the delta for the time dimension,
-    # a duration equal to the 1st element in the vector returned by diff() is added to the
-    # last time observation to obtain the new time.
-    padded_time_list = c(time_list, time_list[length(time_list)]+diff(time_list)[1])
-    for(stars_obj in 1:length(stars_list))
-    {
-      t_i = store_as_stars(time_cols[, stars_obj])
-      time_list_subset = padded_time_list[stars_obj:(stars_obj+1)]
-      stars_list[[stars_obj]] = c(t_i, dim_name = "time", values = time_list_subset)
-    }
-
-    # To convert the list of stars objects to a single stars object
-    stars_nD = stars_list[[1]]
-    for(i in 2:length(stars_list))
-    {
-      stars_nD = c(stars_nD, stars_list[[i]])
-    }
-    # Fixing temporal dimensions - might need to find better solutions!
-    attr(stars_nD, "dimensions")[["time"]]$to = as.numeric(dim(stars_nD)["time"])
-    attr(stars_nD, "dimensions")[["time"]]$delta = attr(stars_nD, "dimensions")[["time"]]$delta / (as.numeric(dim(stars_nD)["time"]) - 1)
-  } else if(dimensionality[5] == 0) #If vector
-  {
-    # create a stars object named `stars_nD` from the vector files...
-  } else if(is.na(dimensionality[5])) #If neither raster or vector (e.g. pure time series of values)
-  {
-    # Create a consistent data structure (maybe stars object too?) for applying UDFs on
+    legend_df$filename = file_list
+    legend_df$timestamp = as.POSIXct(legend_df$timestamp)
+  #   time_list = as.POSIXct(unique(legend_df$timestamp))
+  #   band_list = as.character(unique(legend_df$band))
+  # 
+  #   time_cols = matrix(nrow = length(band_list), ncol = length(time_list))
+  #   num_files = dim(legend_df)[1]
+  #   for(tifs in 1:num_files)
+  #   {
+  #     time_cols[legend_df$band_index[tifs], legend_df$time_index[tifs]] = paste(legend_dir, as.character(legend_df$filename[tifs]), sep = "/")
+  #   }
+  # 
+  #   stars_list = list()
+  #   length(stars_list) = length(time_list)
+  #   store_as_stars = function(ind_cols)
+  #   {
+  #     t_i = read_stars(.x = ind_cols, along = "band")
+  #   }
+  # 
+  #   # Since a time duration is needed to calculate the delta for the time dimension,
+  #   # a duration equal to the 1st element in the vector returned by diff() is added to the
+  #   # last time observation to obtain the new time.
+  #   padded_time_list = c(time_list, time_list[length(time_list)]+diff(time_list)[1])
+  #   for(stars_obj in 1:length(stars_list))
+  #   {
+  #     t_i = store_as_stars(time_cols[, stars_obj])
+  #     time_list_subset = padded_time_list[stars_obj:(stars_obj+1)]
+  #     stars_list[[stars_obj]] = c(t_i, dim_name = "time", values = time_list_subset)
+  #   }
+  # 
+  #   # To convert the list of stars objects to a single stars object
+  #   stars_nD = stars_list[[1]]
+  #   for(i in 2:length(stars_list))
+  #   {
+  #     stars_nD = c(stars_nD, stars_list[[i]])
+  #   }
+  #   # Fixing temporal dimensions - might need to find better solutions!
+  #   attr(stars_nD, "dimensions")[["time"]]$to = as.numeric(dim(stars_nD)["time"])
+  #   attr(stars_nD, "dimensions")[["time"]]$delta = attr(stars_nD, "dimensions")[["time"]]$delta / (as.numeric(dim(stars_nD)["time"]) - 1)
+  # } else if(dimensionality[5] == 0) #If vector
+  # {
+  #   # create a stars object named `stars_nD` from the vector files...
+  # } else if(is.na(dimensionality[5])) #If neither raster or vector (e.g. pure time series of values)
+  # {
+  #   # Create a consistent data structure (maybe stars object too?) for applying UDFs on
+  # }
+  bin_read_legend(legend_df)
   }
-  stars_nD
 }
 
 

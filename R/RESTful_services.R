@@ -451,7 +451,7 @@ bin_read_legend = function(legend)
   # timestamps_padded = c(timestamps, timestamps[length(timestamps)]+diff(timestamps)[1])
   num_bands = max(legend$band_index)
   bands = unique(legend$band)
-  filewpaths = cbind(legend$X1, legend$filename)[,2]
+  filewpaths = cbind(legend[,1], legend$filename)[,2]
   stars_obj = read_stars(filewpaths, along = list(band = bands, time = timestamps))
 }
 
