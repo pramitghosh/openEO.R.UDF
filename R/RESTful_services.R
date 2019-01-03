@@ -433,6 +433,7 @@ bin_unzip_string = function(string = "data/binary_udf/bin_data", file = TRUE)
   if(file)
     base64decode(file = string, output = file("temp.zip", "wb")) else
       base64decode(what = string, output = file("temp.zip", "wb"))
+  while(!file.exists("temp.zip")) Sys.sleep(1)
   cat("Finished decoding string; Starting to uncompress ZIP file...\n")
   closeAllConnections()
   unzip(zipfile = "temp.zip", overwrite = T, exdir = "disk") # Works with Windows
@@ -447,12 +448,13 @@ bin_read_legend = function(legend)
   cat("Creating stars object...\n")
   num_time = max(legend$time_index)
   timestamps = unique(legend$timestamp)
-  timestamps_padded = c(timestamps, timestamps[length(timestamps)]+diff(timestamps)[1])
+  # timestamps_padded = c(timestamps, timestamps[length(timestamps)]+diff(timestamps)[1])
   num_bands = max(legend$band_index)
   bands = unique(legend$band)
   filewpaths = cbind(legend$X1, legend$filename)[,2]
   stars_obj = read_stars(filewpaths, along = list(band = bands, time = timestamps))
 }
+
 
 #' @serializer unboxedJSON
 #' @post /udf/binary
@@ -464,17 +466,24 @@ run_UDF.binary = function(req)
   # post_body = fromJSON(req)
   cat("Converted incoming JSON to R object\n")
 
+  # bin_unzip_string(string = post_body$base64str, file = FALSE)
   bin_unzip_string(string = post_body$base64str, file = FALSE)
 
   cat("Reading legend...\n")
+  # legend = fromJSON(post_body$legend)
   legend = fromJSON(post_body$legend)
+  
   legend$timestamp = as.POSIXct(legend$timestamp)
   stars_in = bin_read_legend(legend)
   cat("Creating stars object from incoming data\n")
   unlink("disk", recursive = TRUE)
   cat("Deleted directory disk\n")
 
-  script = json2script(post_body$code)
+  # script = json2script(post_body$code)
+  script = post_body$code$code$source
+  script = gsub("\"", "'", script)
+  script = gsub("\r", "", script)
+  
   cat("Applying UDF on incoming stars object...\n")
   stars_out = run_script_raw(stars_obj = stars_in, script_text = script)
   cat("Output stars object created\n")
@@ -515,13 +524,14 @@ run_UDF.binary = function(req)
   unlink("results", recursive = TRUE)
   out_bin_string = base64encode(what = "results.zip")
   cat("Created outgoing base64 encoded string\n")
-  file.remove("results.zip")
-  response = list(legend = legend_out, base64str = out_bin_string)
+  file_removal = file.remove("results.zip")
+  response = list(legend = as.list(legend_out), base64str = out_bin_string)
   # response = append(response, list(base64str = out_bin_string))
-  cat("Created body for POST response\n")
-  post_response_body = toJSON(response, dataframe = "rows")
+  # cat("Created body for POST response\n")
+  # post_response_body = toJSON(response, dataframe = "rows")
   cat("Converted R object to JSON for response\n")
   # post_response_body = gsub('\"', '"', post_response_body)
-  post_response_body
+  # closeAllConnections()
+  # response = as.character(post_response_body)
+  response
 }
-
