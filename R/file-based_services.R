@@ -160,6 +160,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
           # #Need to have separate write methods for resultant objects which have different dimensionality - say c(0,0,0,0,1) (a time-series only).
           # #Resultant dimensionality can be calculated from the dimensionality of the Collection and the UDF (as suggested to Florian)
           # st_write(obj = result, dsn = paste(out_dir, "out.tif", sep = "/"))
+          cat("Results written to disk...\n")
         }
       } else #If UDF result is raster but not temporal
       {
@@ -195,6 +196,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
           out_legend$whether_raster = 1
         }
         write.csv(x = out_legend, file = paste(out_dirpath, "out_legend.csv", sep = "/"))
+        cat("Results written to disk...\n")
       }
     } else #If UDf result is not a raster
     {
