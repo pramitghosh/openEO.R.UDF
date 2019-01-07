@@ -1,7 +1,7 @@
 Package: openEO.R.UDF
 Type: Package
 Title: User-defined functions (UDF) in R on Earth observation data in cloud back-ends
-Version: 0.0.3
+Version: 0.0.4
 Date: 2018-12-02
 Authors@R: c(person(given = "Pramit", family = "Ghosh", email = "pramitghosh@uni-muenster.de", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1852-5951")),
               person(given = "Florian", family = "Lahn", email = "florian.lahn@uni-muenster.de", role = c("aut", "ctb")))
