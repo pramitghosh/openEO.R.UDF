@@ -488,8 +488,22 @@ run_UDF.binary = function(req)
   stars_out = run_script_raw(stars_obj = stars_in, script_text = script)
   cat("Output stars object created\n")
 
-  time_out = dim(stars_out)[["time"]]
-  band_out = dim(stars_out)[["band"]]
+  time_only = FALSE
+  band_only = FALSE
+  
+  time_out = try(dim(stars_out)[["time"]], silent = TRUE)
+  if(class(time_out) == "try-error")
+  {
+    time_out = 1
+    time_only = TRUE
+  }
+  band_out = try(dim(stars_out)[["band"]], silent = TRUE)
+  if(class(band_out) == "try-error")
+  {
+    band_out = 1
+    band_only = TRUE
+  }
+
   legend_out = matrix(ncol = ncol(legend), nrow = time_out * band_out)
   colnames(legend_out) = colnames(legend)
   legend_out = as.data.frame(legend_out)
@@ -497,8 +511,8 @@ run_UDF.binary = function(req)
 
   out_dir = "results"
   dir.create(out_dir)
-  time_vals = attr(stars_out, "dimensions")[["time"]]$values
-  band_vals = attr(stars_out, "dimensions")[["band"]]$values
+  if(!time_only) time_vals = attr(stars_out, "dimensions")[["time"]]$values else time_vals = NA
+  if(!band_only) band_vals = attr(stars_out, "dimensions")[["band"]]$values else band_vals = NA
   cat("Starting to write results...\n")
   for(time_num in 1:time_out)
   {
@@ -509,7 +523,14 @@ run_UDF.binary = function(req)
     {
       cat(paste("Band:", band_num, "\n", sep = " "))
       filename = paste(out_path, "/b_", band_num, ".tif",  sep = "")
-      stars_subset = stars_out[,,,band_num, time_num, drop = T]
+      
+      if(!time_only && !band_only)
+        stars_subset = stars_out[,,,band_num, time_num, drop = T] else
+        if(time_only)
+          stars_subset = stars_out[,,,time_num, drop = T] else
+        if(band_only)
+          stars_subset = stars_out[,,,band_num, drop = T]
+      
       st_write(obj = stars_subset, dsn = filename)
       index = ((time_num - 1) * band_out) + band_num
       # print(index)
