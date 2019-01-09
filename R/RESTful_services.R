@@ -429,9 +429,9 @@ run_UDF.json.raw = function(req)
 close_relevant_conn = function(con_description)
 {
   cno = as.numeric(rownames(as.data.frame(showConnections())[as.data.frame(showConnections())$description == con_description]))
-  for(c in nrow(showConnections()))
+  for(c in cno)
   {
-    con = try(getConnection(what = cno[c]), silent = TRUE)
+    con = try(getConnection(what = c), silent = TRUE)
     if(class(con) != "try-error")
     {
       close(con)
