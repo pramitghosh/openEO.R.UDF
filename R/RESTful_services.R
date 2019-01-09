@@ -426,6 +426,24 @@ run_UDF.json.raw = function(req)
 # json = fromJSON(txt = "data/binary_udf/post_body.json") # [Test] Read JSON into R object
 # write(bin_string, "data/binary_udf/bin_data") # [Test] Write Base64 encoded string to disk
 
+close_relevant_conn = function(con_description)
+{
+  cno = as.numeric(rownames(as.data.frame(showConnections())[as.data.frame(showConnections())$description == con_description]))
+  for(c in nrow(showConnections()))
+  {
+    con = try(getConnection(what = cno[c]), silent = TRUE)
+    if(class(con) != "try-error")
+    {
+      close(con)
+      cat("\nConnection(s) closed successfully!\n")
+    } else
+    {
+      cat("\nNo connections with given description to close.\n")
+      break
+    }
+  }
+}
+
 bin_unzip_string = function(string = "data/binary_udf/bin_data", file = TRUE)
 {
   cat("Decoding base64 encoded string...\n")
@@ -434,8 +452,9 @@ bin_unzip_string = function(string = "data/binary_udf/bin_data", file = TRUE)
     base64decode(file = string, output = file("temp.zip", "wb")) else
       base64decode(what = string, output = file("temp.zip", "wb"))
   while(!file.exists("temp.zip")) Sys.sleep(1)
+  close_relevant_conn("temp.zip")
   cat("Finished decoding string; Starting to uncompress ZIP file...\n")
-  closeAllConnections()
+  # closeAllConnections()
   unzip(zipfile = "temp.zip", overwrite = T, exdir = "disk") # Works with Windows
   # system("mkdir disk && cd disk && jar -xvf ../temp.zip", ignore.stdout = T) # Works with Linux; requires 'fastjar'
   cat("Finished unzipping file; Removing ZIP file...\n")
