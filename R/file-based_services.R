@@ -1,5 +1,6 @@
 read_legend = function(legend_file)
 {
+  cat(paste(Sys.time(), "Reading legend file\n", sep = " "))
   read.csv(legend_file, header = TRUE)
 }
 
@@ -83,26 +84,28 @@ read_generics = function(legend_file, dimensionality)
 run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim = c(1,1,1,1,1), out_dir = "results")
 {
     # drop_dim and in_dim could be passed on from the backend as metadata in the form of files
-
+    cat(paste(Sys.time(), "JSON received!\n"))
     #In the future in_dim has to read in from disk (from what was written by the backend)
     #drop_dim is currently a numeric value corresponding to one of the indices of in_dim, but could also be a vector
     #For space (x,y), band (b), time (t) and whether raster? (r; 1 = raster, 0 = vector, NA = neither) for now
     all_dims = 1:4 #Keeping only x,y,b,t
+    cat(paste(Sys.time(), "Attempting to read legend file\n", sep = " "))
     if(file.exists(legend_name)) #Check if legend file exists
     stars_obj = read_generics(legend_file = legend_name, dimensionality = in_dim)  else
     stop("Legend file is not accessible or does not exist!")
     #Need to keep check that drop_dim is consistent with the boolean typechecking framework suggested to Florian as
     #an extra layer of armour against inconsistent UDFs from the user
+    cat(paste(Sys.time(), "Calculating resultant stars object\n", sep = " "))
     result = st_apply(stars_obj, FUN = function_name, MARGIN = all_dims[-c(drop_dim)])
     out_dirpath = paste(dirname(legend_name), out_dir, sep = "/")
-
+    cat(paste(Sys.time(), "Creating output directory", sep = " "))
     if (!dir.exists(out_dirpath)) {
       dir.create(out_dirpath)
     }
 
     new_dim = in_dim
     new_dim[drop_dim] = 0
-
+    cat(paste(Sys.time(), "Starting to write results\n", sep = " "))
     if(new_dim[5] == 1) #If UDF result = raster
     {
       in_legend = read_legend(legend_name)
@@ -122,6 +125,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
           band_list = as.character(unique(in_legend$band))
           for(time_num in 1:num_time)
           {
+            cat(paste(Sys.time(), "Time: ", time_num, "\n", sep = " "))
             #time_num: iterator for time indices
             #num_time: total number of time observations present
             dir.create(path = paste(out_path, time_num, sep = ""))
@@ -132,6 +136,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
 
             for(band_num in 1:num_band)
             {
+              cat(paste(Sys.time(), "Band: ", band_num, "\n", sep = " "))
               #band_num: iterator for band indices
               #num_band: total number of bands present
               tmp_stars_obj = result[,,, time_num] #time dimension inconsistent with (a) dim() and attr(<obj>, "dimensions") - need to look when reading TIFFs to stars objects!
@@ -155,12 +160,13 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
               out_legend$whether_raster = 1
             }
           }
+          cat(paste(Sys.time(), "Writing out legend to disk\n", sep = " "))
           write.csv(x = out_legend, file = paste(out_dirpath, "out_legend.csv", sep = "/"))
 
           # #Need to have separate write methods for resultant objects which have different dimensionality - say c(0,0,0,0,1) (a time-series only).
           # #Resultant dimensionality can be calculated from the dimensionality of the Collection and the UDF (as suggested to Florian)
           # st_write(obj = result, dsn = paste(out_dir, "out.tif", sep = "/"))
-          cat("Results written to disk...\n")
+          cat(paste(Sys.time(), "Results written to disk...\n", sep = " "))
         }
       } else #If UDF result is raster but not temporal
       {
@@ -176,6 +182,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
 
         for(band_number in 1:num_band)
         {
+          cat(paste(Sys.time(), "Band: ", band_number, "\n", sep = " "))
           #band_number: iterator for band indices
           #num_band: total number of bands present
           st_write(obj = result[,,,band_number], dsn = paste(out_path, "NA/", "b_", band_number, ".tif",  sep = ""))
@@ -195,8 +202,9 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
 
           out_legend$whether_raster = 1
         }
+        cat(paste(Sys.time(), "Writing legend file to disk\n", sep = " "))
         write.csv(x = out_legend, file = paste(out_dirpath, "out_legend.csv", sep = "/"))
-        cat("Results written to disk...\n")
+        cat(paste(Sys.time(), "Results written to disk...\n", sep = " "))
       }
     } else #If UDf result is not a raster
     {

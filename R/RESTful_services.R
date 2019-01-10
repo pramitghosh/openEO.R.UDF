@@ -435,10 +435,10 @@ close_relevant_conn = function(con_description)
     if(class(con) != "try-error")
     {
       close(con)
-      cat("\nConnection(s) closed successfully!\n")
+      cat(paste(Sys.time(), "Connection(s) closed successfully!\n", sep = " "))
     } else
     {
-      cat("\nNo connections with given description to close.\n")
+      cat(paste(Sys.time(), "\nNo connections with given description to close.\n", sep = " "))
       break
     }
   }
@@ -446,25 +446,25 @@ close_relevant_conn = function(con_description)
 
 bin_unzip_string = function(string = "data/binary_udf/bin_data", file = TRUE)
 {
-  cat("Decoding base64 encoded string...\n")
+  cat(paste(Sys.time(), "Decoding base64 encoded string...\n", sep = " "))
   # dir.create("temp")
   if(file)
     base64decode(file = string, output = file("temp.zip", "wb")) else
       base64decode(what = string, output = file("temp.zip", "wb"))
   while(!file.exists("temp.zip")) Sys.sleep(1)
   close_relevant_conn("temp.zip")
-  cat("Finished decoding string; Starting to uncompress ZIP file...\n")
+  cat(paste(Sys.time(), "Finished decoding string; Starting to uncompress ZIP file...\n", sep = " "))
   # closeAllConnections()
   unzip(zipfile = "temp.zip", overwrite = T, exdir = "disk") # Works with Windows
   # system("mkdir disk && cd disk && jar -xvf ../temp.zip", ignore.stdout = T) # Works with Linux; requires 'fastjar'
-  cat("Finished unzipping file; Removing ZIP file...\n")
+  cat(paste(Sys.time(), "Finished unzipping file; Removing ZIP file...\n", sep = " "))
   file.remove("temp.zip")
-  cat("Finished deleting ZIP file\n")
+  cat(paste(Sys.time(), "Finished deleting ZIP file\n", sep = " "))
 }
 
 bin_read_legend = function(legend)
 {
-  cat("Creating stars object...\n")
+  cat(paste(Sys.time(), "Creating stars object...\n", sep = " "))
   num_time = max(legend$time_index)
   timestamps = unique(legend$timestamp)
   # timestamps_padded = c(timestamps, timestamps[length(timestamps)]+diff(timestamps)[1])
@@ -479,33 +479,33 @@ bin_read_legend = function(legend)
 #' @post /udf/binary
 run_UDF.binary = function(req)
 {
-  cat("Reading JSON...\n")
+  cat(paste(Sys.time(), " Reading JSON...\n", sep = ""))
   # post_body = fromJSON(txt = "data/binary_udf/post_body.json") # for testing locally
   post_body = fromJSON(req$postBody) # for use with plumber
   # post_body = fromJSON(req)
-  cat("Converted incoming JSON to R object\n")
+  cat(paste(Sys.time(), "Converted incoming JSON to R object\n", sep = " "))
 
   # bin_unzip_string(string = post_body$base64str, file = FALSE)
   bin_unzip_string(string = post_body$base64str, file = FALSE)
 
-  cat("Reading legend...\n")
+  cat(paste(Sys.time(), "Reading legend...\n", sep = " "))
   # legend = fromJSON(post_body$legend)
   legend = fromJSON(post_body$legend)
   
   legend$timestamp = as.POSIXct(legend$timestamp)
   stars_in = bin_read_legend(legend)
-  cat("Creating stars object from incoming data\n")
+  cat(paste(Sys.time(), "Creating stars object from incoming data\n", sep = " "))
   unlink("disk", recursive = TRUE)
-  cat("Deleted directory disk\n")
+  cat(paste(Sys.time(), "Deleted directory disk\n", sep = " "))
 
   # script = json2script(post_body$code)
   script = post_body$code$code$source
   script = gsub("\"", "'", script)
   script = gsub("\r", "", script)
   
-  cat("Applying UDF on incoming stars object...\n")
+  cat(paste(Sys.time(), "Applying UDF on incoming stars object...\n", sep = " "))
   stars_out = run_script_raw(stars_obj = stars_in, script_text = script)
-  cat("Output stars object created\n")
+  cat(paste(Sys.time(), "Output stars object created\n", sep = " "))
 
   time_only = FALSE
   band_only = FALSE
@@ -526,21 +526,21 @@ run_UDF.binary = function(req)
   legend_out = matrix(ncol = ncol(legend), nrow = time_out * band_out)
   colnames(legend_out) = colnames(legend)
   legend_out = as.data.frame(legend_out)
-  cat("Outgoing legend created\n")
+  cat(paste(Sys.time(), "Outgoing legend created\n", sep = " "))
 
   out_dir = "results"
   dir.create(out_dir)
   if(!time_only) time_vals = attr(stars_out, "dimensions")[["time"]]$values else time_vals = NA
   if(!band_only) band_vals = attr(stars_out, "dimensions")[["band"]]$values else band_vals = NA
-  cat("Starting to write results...\n")
+  cat(paste(Sys.time(), "Starting to write results...\n", sep = " "))
   for(time_num in 1:time_out)
   {
-    cat(paste("Time:", time_num, "\n", sep = " "))
+    cat(paste(Sys.time(), " Time:", time_num, "\n", sep = " "))
     out_path = paste(out_dir, "/t_", time_num, sep = "")
     dir.create(out_path)
     for(band_num in 1:band_out)
     {
-      cat(paste("Band:", band_num, "\n", sep = " "))
+      cat(paste(Sys.time(), " Band:", band_num, "\n", sep = " "))
       filename = paste(out_path, "/b_", band_num, ".tif",  sep = "")
       
       if(!time_only && !band_only)
@@ -563,13 +563,13 @@ run_UDF.binary = function(req)
   zip(zipfile = "results.zip", files = filepaths, recurse = TRUE)
   unlink("results", recursive = TRUE)
   out_bin_string = base64encode(what = "results.zip")
-  cat("Created outgoing base64 encoded string\n")
+  cat(paste(Sys.time(), "Created outgoing base64 encoded string\n", sep = " "))
   file_removal = file.remove("results.zip")
   response = list(legend = as.list(legend_out), base64str = out_bin_string)
   # response = append(response, list(base64str = out_bin_string))
   # cat("Created body for POST response\n")
   # post_response_body = toJSON(response, dataframe = "rows")
-  cat("Converted R object to JSON for response\n")
+  cat(paste(Sys.time(), "Converted R object to JSON for response\n", sep = " "))
   # post_response_body = gsub('\"', '"', post_response_body)
   # closeAllConnections()
   # response = as.character(post_response_body)
