@@ -84,7 +84,7 @@ read_generics = function(legend_file, dimensionality)
 run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim = c(1,1,1,1,1), out_dir = "results")
 {
     # drop_dim and in_dim could be passed on from the backend as metadata in the form of files
-    cat(paste(Sys.time(), "JSON received!\n"))
+    cat(paste(Sys.time(), "JSON received!\n", sep = " "))
     #In the future in_dim has to read in from disk (from what was written by the backend)
     #drop_dim is currently a numeric value corresponding to one of the indices of in_dim, but could also be a vector
     #For space (x,y), band (b), time (t) and whether raster? (r; 1 = raster, 0 = vector, NA = neither) for now
