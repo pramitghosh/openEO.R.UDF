@@ -339,9 +339,10 @@ run_UDF.json = function(req)
   script_text = json2script(json_in)
 
   # dim_mod = apply(as.array(json_in$code$dim_mod), 1, json2dim_mod)
-  dim_mod = try(json2dim_mod(json_in$code$alt_dim), silent = T)
+  dim_mod = try(json2dim_mod(json_in$code$dim_mod), silent = T)
   if(class(dim_mod) == "try-error")
-    dim_mod = 4 # Testing
+    dim_mod = 4 else # Testing
+      cat(paste(Sys.time(), " Dimension set by the backend!\n", sep = ";"))
 
   stars_in = json2stars(json_in)
   stars_out = run_script(stars_obj = stars_in, dim_mod = dim_mod, script_text = script_text)
@@ -484,7 +485,6 @@ run_UDF.binary = function(req)
   post_body = fromJSON(req$postBody) # for use with plumber
   # post_body = fromJSON(req)
   cat(paste(Sys.time(), "Converted incoming JSON to R object\n", sep = " "))
-
   # bin_unzip_string(string = post_body$base64str, file = FALSE)
   bin_unzip_string(string = post_body$base64str, file = FALSE)
 
