@@ -333,7 +333,7 @@ json2dim_mod = function(json_dim)
 #' @post /udf
 run_UDF.json = function(req)
 {
-  print(paste("\n", Sys.time(), "\n", sep = ""))
+  cat(paste("\n", Sys.time(), "\n", sep = ""))
   cat("Started executing at endpoint /udf\n")
   json_in = fromJSON(req$postBody, simplifyVector = FALSE)
   script_text = json2script(json_in)
