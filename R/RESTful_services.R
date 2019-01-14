@@ -333,7 +333,7 @@ json2dim_mod = function(json_dim)
 #' @post /udf
 run_UDF.json = function(req)
 {
-  print(Sys.time())
+  print(paste("\n", Sys.time(), "\n", sep = ""))
   cat("Started executing at endpoint /udf\n")
   json_in = fromJSON(req$postBody, simplifyVector = FALSE)
   script_text = json2script(json_in)
@@ -341,8 +341,11 @@ run_UDF.json = function(req)
   # dim_mod = apply(as.array(json_in$code$dim_mod), 1, json2dim_mod)
   dim_mod = try(json2dim_mod(json_in$code$dim_mod), silent = T)
   if(class(dim_mod) == "try-error")
+  {
     dim_mod = 4 else # Testing
-      cat(paste(Sys.time(), " Dimension set by the backend!\n", sep = ";"))
+    cat(paste(Sys.time(), " Dimension to be modified set to: time (by default)\n", sep = ";"))
+  } else
+    cat(paste(Sys.time(), " Dimension set by the backend!\n", sep = ";"))
 
   stars_in = json2stars(json_in)
   stars_out = run_script(stars_obj = stars_in, dim_mod = dim_mod, script_text = script_text)
@@ -358,6 +361,7 @@ run_UDF.json = function(req)
 #' @post /udf/raw
 run_UDF.json.raw = function(req)
 {
+  cat("\n")
   json_in = fromJSON(req$postBody, simplifyVector = FALSE)
   script_text = json2script(json_in)
 
@@ -480,7 +484,7 @@ bin_read_legend = function(legend)
 #' @post /udf/binary
 run_UDF.binary = function(req)
 {
-  cat(paste(Sys.time(), " Reading JSON...\n", sep = ""))
+  cat(paste("\n", Sys.time(), " Reading JSON...\n", sep = ""))
   # post_body = fromJSON(txt = "data/binary_udf/post_body.json") # for testing locally
   post_body = fromJSON(req$postBody) # for use with plumber
   # post_body = fromJSON(req)
