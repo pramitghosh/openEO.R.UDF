@@ -342,7 +342,7 @@ run_UDF.json = function(req)
   dim_mod = try(json2dim_mod(json_in$code$dim_mod), silent = T)
   if(class(dim_mod) == "try-error")
   {
-    dim_mod = 4 else # Testing
+    dim_mod = 4 # Testing
     cat(paste(Sys.time(), " Dimension to be modified set to: time (by default)\n", sep = ";"))
   } else
     cat(paste(Sys.time(), " Dimension set by the backend!\n", sep = ";"))
