@@ -97,7 +97,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
     #an extra layer of armour against inconsistent UDFs from the user
     cat(paste(Sys.time(), "Calculating resultant stars object\n", sep = " "))
     result = st_apply(stars_obj, FUN = function_name, MARGIN = all_dims[-c(drop_dim)])
-    cat(paste(Sys.time(), "Applied the UDF and created the resultant stars object", sep = ""))
+    cat(paste(Sys.time(), "Applied the UDF and created the resultant stars object\n", sep = " "))
     out_dirpath = paste(dirname(legend_name), out_dir, sep = "/")
     cat(paste(Sys.time(), "Creating output directory\n", sep = " "))
     if (!dir.exists(out_dirpath)) {
@@ -212,5 +212,5 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
       #Do things accordingly if the feature/timeseries is temporal, layered etc.
     }
     
-    cat(paste(Sys.time(), "UDF applied successfully! Exiting UDF service and returning control to back-end...", sep = ""))
+    cat(paste(Sys.time(), "UDF applied successfully! Exiting UDF service and returning control to back-end...\n\n", sep = " "))
 }
