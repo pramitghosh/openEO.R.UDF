@@ -97,15 +97,16 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
     #an extra layer of armour against inconsistent UDFs from the user
     cat(paste(Sys.time(), "Calculating resultant stars object\n", sep = " "))
     result = st_apply(stars_obj, FUN = function_name, MARGIN = all_dims[-c(drop_dim)])
+    cat(paste(Sys.time(), "Applied the UDF and created the resultant stars object", sep = ""))
     out_dirpath = paste(dirname(legend_name), out_dir, sep = "/")
-    cat(paste(Sys.time(), "Creating output directory", sep = " "))
+    cat(paste(Sys.time(), "Creating output directory\n", sep = " "))
     if (!dir.exists(out_dirpath)) {
       dir.create(out_dirpath)
     }
 
     new_dim = in_dim
     new_dim[drop_dim] = 0
-    cat(paste(Sys.time(), "Starting to write results\n", sep = " "))
+    cat(paste(Sys.time(), "Starting to write results...\n", sep = " "))
     if(new_dim[5] == 1) #If UDF result = raster
     {
       in_legend = read_legend(legend_name)
@@ -202,7 +203,7 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
 
           out_legend$whether_raster = 1
         }
-        cat(paste(Sys.time(), "Writing legend file to disk\n", sep = " "))
+        cat(paste(Sys.time(), "Writing out legend file to disk\n", sep = " "))
         write.csv(x = out_legend, file = paste(out_dirpath, "out_legend.csv", sep = "/"))
         cat(paste(Sys.time(), "Results written to disk...\n", sep = " "))
       }
@@ -210,4 +211,6 @@ run_UDF = function(legend_name = "legend.csv", function_name, drop_dim, in_dim =
     {
       #Do things accordingly if the feature/timeseries is temporal, layered etc.
     }
+    
+    cat(paste(Sys.time(), "UDF applied successfully! Exiting UDF service and returning control to back-end...", sep = ""))
 }
