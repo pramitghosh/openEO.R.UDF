@@ -437,7 +437,7 @@ close_relevant_conn = function(con_description)
   for(c in cno)
   {
     con = try(getConnection(what = c), silent = TRUE)
-    if(class(con) != "try-error")
+    if(any(class(con) != "try-error"))
     {
       close(con)
       cat(paste(Sys.time(), "Connection(s) closed successfully!\n", sep = " "))
