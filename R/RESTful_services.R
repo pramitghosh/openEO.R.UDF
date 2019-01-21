@@ -470,12 +470,14 @@ bin_unzip_string = function(string = "data/binary_udf/bin_data", file = TRUE)
 bin_read_legend = function(legend)
 {
   cat(paste(Sys.time(), "Creating stars object...\n", sep = " "))
-  num_time = max(legend$time_index)
+  num_time = max(as.numeric(legend$time_index))
   timestamps = unique(legend$timestamp)
   # timestamps_padded = c(timestamps, timestamps[length(timestamps)]+diff(timestamps)[1])
-  num_bands = max(legend$band_index)
+  num_bands = max(as.numeric(legend$band_index))
   bands = unique(legend$band)
-  filewpaths = cbind(legend[,1], legend$filename)[,2]
+  filewpaths = try(cbind(legend[,1], legend$filename)[,2], silent = TRUE)
+  if(class(filewpaths) == "try-error")
+    filewpaths = legend$filename
   stars_obj = read_stars(filewpaths, along = list(band = bands, time = timestamps))
 }
 
@@ -577,6 +579,6 @@ run_UDF.binary = function(req)
   # post_response_body = gsub('\"', '"', post_response_body)
   # closeAllConnections()
   # response = as.character(post_response_body)
-  response
+  return(response)
 }
 

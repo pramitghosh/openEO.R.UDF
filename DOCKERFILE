@@ -19,7 +19,9 @@ RUN apt-get update -qq && apt-get install -y \
   libcurl4-gnutls-dev \
   libudunits2-dev \
   libgdal-dev \
-  gdal-bin
+  gdal-bin \
+  libgeos++-dev \
+  libgeos-c1v5
 
 # libxml2-dev libssl-dev libcurl4-gnutls-dev to get plumber running
 # libunits2-dev for stars and sf (gdal is required for sf)

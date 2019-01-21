@@ -8,3 +8,4 @@ install.packages("stars", dependencies = TRUE)
 install.packages("base64enc", dependencies = TRUE)
 install.packages("zip", dependencies = TRUE)
 
+install.packages("RStoolbox", dependencies = TRUE)
