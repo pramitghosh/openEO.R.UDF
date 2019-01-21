@@ -24,4 +24,6 @@ Depends:
   zip (>= 1.0.0)
 Imports:
   utils
+Suggests:
+  RStoolbox
 RoxygenNote: 6.0.1
