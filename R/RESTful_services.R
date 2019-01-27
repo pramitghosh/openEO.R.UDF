@@ -507,17 +507,16 @@ bin_read_legend = function(legend)
 #* @serializer unboxedJSON
 #* @post /udf/binary
 #' UDFs on a \code{stars} object created from a binary string
-#' 
-#' This function is linked to the endpoint \code{/udf/binary}
 #'
 #' @param req The incoming HTTP POST request
 #'
 #' @return The response to the HTTP POST request
 #' 
-#' @description
-#' Run user-defined functions on a \code{stars} object created from a base64 encoded
+#' @description Run user-defined functions on a \code{stars} object created from a base64 encoded
 #' string representing a ZIP file containing generic GeoTIFF files. The \code{stars}
 #' is exposed as it is to the UDF.
+#' 
+#' Creates \code{stars} object from legend file and GeoTIFFs
 run_UDF.binary = function(req)
 {
   cat(paste("\n", Sys.time(), " Reading JSON...\n", sep = ""))

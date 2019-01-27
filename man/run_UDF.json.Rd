@@ -2,8 +2,7 @@
 % Please edit documentation in R/RESTful_services.R
 \name{run_UDF.json}
 \alias{run_UDF.json}
-\title{Run user-defined functions on a \code{stars} object created from JSON arrays
-exposed as a list to the UDF.}
+\title{UDF on \code{stars} object exposed as a list}
 \usage{
 run_UDF.json(req)
 }
@@ -14,5 +13,8 @@ run_UDF.json(req)
 The response to the HTTP POST request
 }
 \description{
+Runs user-defined functions on a \code{stars} object created from JSON arrays
+exposed as a list to the UDF.
+
 This function is linked to the endpoint \code{/udf}
 }

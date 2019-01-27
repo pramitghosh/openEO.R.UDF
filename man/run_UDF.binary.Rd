@@ -2,9 +2,7 @@
 % Please edit documentation in R/RESTful_services.R
 \name{run_UDF.binary}
 \alias{run_UDF.binary}
-\title{Run user-defined functions on a \code{stars} object created from a base64 encoded
-string representing a ZIP file containing generic GeoTIFF files. The \code{stars}
-is exposed as it is to the UDF.}
+\title{UDFs on a \code{stars} object created from a binary string}
 \usage{
 run_UDF.binary(req)
 }
@@ -15,5 +13,9 @@ run_UDF.binary(req)
 The response to the HTTP POST request
 }
 \description{
-This function is linked to the endpoint \code{/udf/binary}
+Run user-defined functions on a \code{stars} object created from a base64 encoded
+string representing a ZIP file containing generic GeoTIFF files. The \code{stars}
+is exposed as it is to the UDF.
+
+Creates \code{stars} object from legend file and GeoTIFFs
 }

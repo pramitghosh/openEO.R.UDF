@@ -2,12 +2,12 @@
 % Please edit documentation in R/file-based_services.R
 \name{read_generics}
 \alias{read_generics}
-\title{Read legend file and dimensionality of incoming data}
+\title{Creates \code{stars} object from legend file and GeoTIFFs}
 \usage{
 read_generics(legend_file, dimensionality)
 }
 \arguments{
-\item{legend_file}{CSV file containing data on the incoming images which acts as a look-up table}
+\item{legend_file}{Location of CSV file containing supplementary data on GeoTIFFs}
 
 \item{dimensionality}{Vector of dimensions {x, y, band, time, raster/vector?}}
 }
@@ -15,5 +15,5 @@ read_generics(legend_file, dimensionality)
 \code{stars} object returned by \code{bin_read_legend()}
 }
 \description{
-Read legend file and dimensionality of incoming data
+Creates \code{stars} object from legend file and GeoTIFFs
 }
