@@ -329,8 +329,16 @@ json2dim_mod = function(json_dim)
   dim_num
 }
 
-#' @serializer unboxedJSON
-#' @post /udf
+#* @serializer unboxedJSON
+#* @post /udf
+#' Run user-defined functions on a \code{stars} object created from JSON arrays
+#' exposed as a list to the UDF.
+#' 
+#' This function is linked to the endpoint \code{/udf}
+#'
+#' @param req The incoming HTTP POST request
+#'
+#' @return The response to the HTTP POST request
 run_UDF.json = function(req)
 {
   cat(paste("\n", Sys.time(), "\n", sep = ""))
@@ -357,8 +365,16 @@ run_UDF.json = function(req)
   json_out
 }
 
-#' @serializer unboxedJSON
-#' @post /udf/raw
+#* @serializer unboxedJSON
+#* @post /udf/raw
+#' Run user-defined functions on a \code{stars} object created from JSON arrays
+#' exposed as it is to the UDF.
+#' 
+#' This function is linked to the endpoint \code{/udf/raw}
+#'
+#' @param req The incoming HTTP POST request
+#'
+#' @return The response to the HTTP POST request
 run_UDF.json.raw = function(req)
 {
   cat("\n")
@@ -482,8 +498,17 @@ bin_read_legend = function(legend)
 }
 
 
-#' @serializer unboxedJSON
-#' @post /udf/binary
+#* @serializer unboxedJSON
+#* @post /udf/binary
+#' Run user-defined functions on a \code{stars} object created from a base64 encoded
+#' string representing a ZIP file containing generic GeoTIFF files. The \code{stars}
+#' is exposed as it is to the UDF.
+#' 
+#' This function is linked to the endpoint \code{/udf/binary}
+#'
+#' @param req The incoming HTTP POST request
+#'
+#' @return The response to the HTTP POST request
 run_UDF.binary = function(req)
 {
   cat(paste("\n", Sys.time(), " Reading JSON...\n", sep = ""))
