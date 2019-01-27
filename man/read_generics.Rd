@@ -12,7 +12,7 @@ read_generics(legend_file, dimensionality)
 \item{dimensionality}{Vector of dimensions {x, y, band, time, raster/vector?}}
 }
 \value{
-\code{stars} object returned by \link{bin_read_legend}
+\code{stars} object returned by \code{bin_read_legend()}
 }
 \description{
 Read legend file and dimensionality of incoming data

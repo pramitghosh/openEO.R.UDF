@@ -331,14 +331,17 @@ json2dim_mod = function(json_dim)
 
 #* @serializer unboxedJSON
 #* @post /udf
-#' Run user-defined functions on a \code{stars} object created from JSON arrays
-#' exposed as a list to the UDF.
-#' 
-#' This function is linked to the endpoint \code{/udf}
+#' UDF on \code{stars} object exposed as a list
 #'
 #' @param req The incoming HTTP POST request
 #'
 #' @return The response to the HTTP POST request
+#' 
+#' @description 
+#' Runs user-defined functions on a \code{stars} object created from JSON arrays
+#' exposed as a list to the UDF.
+#' 
+#' This function is linked to the endpoint \code{/udf}
 run_UDF.json = function(req)
 {
   cat(paste("\n", Sys.time(), "\n", sep = ""))
@@ -367,14 +370,17 @@ run_UDF.json = function(req)
 
 #* @serializer unboxedJSON
 #* @post /udf/raw
-#' Run user-defined functions on a \code{stars} object created from JSON arrays
-#' exposed as it is to the UDF.
-#' 
-#' This function is linked to the endpoint \code{/udf/raw}
+#' UDF on a \code{stars} object transferred as JSON arrays
 #'
 #' @param req The incoming HTTP POST request
 #'
 #' @return The response to the HTTP POST request
+#' 
+#' @description 
+#' Run user-defined functions on a \code{stars} object created from JSON arrays
+#' exposed as it is to the UDF.
+#' 
+#' This function is linked to the endpoint \code{/udf/raw}
 run_UDF.json.raw = function(req)
 {
   cat("\n")
@@ -500,15 +506,18 @@ bin_read_legend = function(legend)
 
 #* @serializer unboxedJSON
 #* @post /udf/binary
-#' Run user-defined functions on a \code{stars} object created from a base64 encoded
-#' string representing a ZIP file containing generic GeoTIFF files. The \code{stars}
-#' is exposed as it is to the UDF.
+#' UDFs on a \code{stars} object created from a binary string
 #' 
 #' This function is linked to the endpoint \code{/udf/binary}
 #'
 #' @param req The incoming HTTP POST request
 #'
 #' @return The response to the HTTP POST request
+#' 
+#' @description
+#' Run user-defined functions on a \code{stars} object created from a base64 encoded
+#' string representing a ZIP file containing generic GeoTIFF files. The \code{stars}
+#' is exposed as it is to the UDF.
 run_UDF.binary = function(req)
 {
   cat(paste("\n", Sys.time(), " Reading JSON...\n", sep = ""))

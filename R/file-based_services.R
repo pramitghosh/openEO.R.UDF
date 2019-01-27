@@ -4,12 +4,12 @@ read_legend = function(legend_file)
   read.csv(legend_file, header = TRUE)
 }
 
-#' Read legend file and dimensionality of incoming data
+#' Creates \code{stars} object from legend file and GeoTIFFs
 #'
-#' @param legend_file CSV file containing data on the incoming images which acts as a look-up table
+#' @param legend_file Location of CSV file containing supplementary data on GeoTIFFs
 #' @param dimensionality Vector of dimensions {x, y, band, time, raster/vector?}
 #'
-#' @return \code{stars} object returned by \link{bin_read_legend}
+#' @return \code{stars} object returned by \code{bin_read_legend()}
 #' @export
 #'
 read_generics = function(legend_file, dimensionality)
