@@ -74,5 +74,26 @@ One of the strategies used involve transmission of data to and from the backend 
 ## Usage
 This package is intended to be used as part of the openEO API. The package works along with the different backends and are not supposed to accessible directly by the client. However, for testing, please refer to the the Wiki pages of this repository [here](https://github.com/pramitghosh/openEO.R.UDF/wiki).
 
-### Releases
-This repository has two versions. The first pre-release version v0.0.1 contains a proof-of-concept implementation of a file-based service. The subsequent tagged version, v0.0.2, implements a RESTful web service to run user-defined functions on EO data. Please note, that the Docker image is meant to be used for this web service only.
+### Strategies
+This R package has implemented 4 strategies for the R UDF service. All of these involve converting the incoming data to a `stars` object before applying the UDF function. An overview of these strategies is shown in the figure below.
+![openEO R UDF strategies](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/strategies.png)
+
+* **Strategy 1** implements the R UDF service as a part of the back-end with data being transmitted as binary GeoTIFF files along with a CSV file acting as a look-up table containing information on which image corresponds to which time, band etc. along with some additional information. These are converted to a `stars` object and exposed to the UDF as a list.
+* **Strategy 2A** implements the R UDF service according to Soeren's JSON schema. Backends send a POST request to a REST endpoint `/udf` with a body containing pixel values in nested JSON arrays. These are converted to a `stars` object and exposed to the UDF as a list.
+* **Strategy 2B** also implements the R UDF service according to the same JSON schema as Strategy 2A, but instead of exposing the converted `stars` object as a list, it exposes it as it is. This runs at the endpoint `/udf/raw`
+* **Strategy 3** implements a REST endpoint at `/udf/binary` and exposes a `stars` object in a manner similar to Strategy 2B. In this strategy, the EO data in the form of GeoTIFF files are compressed into a ZIP file and its base64 encoded string representation is sent to the UDF service by the backend embedding it as a JSON in the POST body. The POST body also contains a look-up table, similar to Strategy 1, but in the form of JSON arrays.
+
+### Performance
+Out of the strategies mentioned above, Strategy 1 is ultimately trivial since it does not offer a RESTful API. Therefore, although, faster than some of the other implementations, it is not practical in the context of openEO. Strategy 2A offers a REST interface, but as it exposes only a list of numbers (representing pixel values) to the UDF, the functionality of this strategy is limited to simple operations (e.g. aggregation over time, band etc.), similar to Strategy 1.
+
+Strategy 2B exposes the whole `stars` object to the UDF, but as the EO data has to converted from ASCII JSON arrays from the incoming POST request to binary objects and reconverted to JSON arrays from binary objects while sending the response back, it is rather slow. Strategy 3 overcomes this limitation by sending the data as a base64 encoded string representing binary GeoTIFF files and offers a much faster turnaround time for running an UDF. **Furthermore, this strategy allows users to install and use any R package (from Github, CRAN etc.) in his/her UDF and also load data from online sources, and therefore allowing a lot of freedom and flexibility for the user.**
+
+Here are some test results for operations on a timeseries (3 timesteps with a temporal resolution of ~10 days) of spatially subsetted (300*300px) Sentinel-2 images containing 13 bands each illustrating the performance.
+
+Aggregation over bands (using `max()`) and time (using `mean()`) using Strategy 1 and 2A
+![Aggregation operations using Strategy 1 and 2A](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/s1v2a.png)
+Reprojection (using `stars::st_warp()`) and Unsupervised Classification (using `RStoolbox::unsuperClass()`) using Strategy 2B and 3
+![Reprojection and Unsupervised Classification using Strategy 2B and 3](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/s2bv3.png)
+![Legend](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/s_legend.jpeg)
+
+Further details regarding these strategies and their implementations may be found on these [slides](https://pramitghosh.github.io/slides/defense_25-1.html) and in [Ghosh et al., 2018](https://www.researchgate.net/publication/330533820_Running_user-defined_functions_in_R_on_Earth_observation_data_in_cloud_back-ends).
