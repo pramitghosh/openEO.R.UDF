@@ -68,6 +68,8 @@ In the above command, `-p` re-routes the port where the service will be availabl
 ```bash
 docker pull pramitghosh/openeo.r.udf
 ```
+#### For using base64 encoded string
+One of the strategies used involve transmission of data to and from the backend through HTTP POST requests in the form of base64 encoded strings representing a ZIP file containing generic GeoTIFFs embedded in a JSON. Please use the Docker container `pramitghosh/openeo.r.udf:wbin` on Docker Hub to use it. Currently, it is not possible to run it manually without encountering segmentation fault due to a long-standing issue in one of the dependencies of this package.
 
 ## Usage
 This package is intended to be used as part of the openEO API. The package works along with the different backends and are not supposed to accessible directly by the client. However, for testing, please refer to the the Wiki pages of this repository [here](https://github.com/pramitghosh/openEO.R.UDF/wiki).
