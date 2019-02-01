@@ -45,7 +45,7 @@ install.packages(c("stars", "jsonlite", "plumber", "raster", "base64enc", "zip")
 This package can then be installed using
 
 ```r
-install_github("pramitghosh/openEO.R.UDF")
+install_github("Open-EO/openeo-r-udf")
 ```
 
 ### Using Docker
