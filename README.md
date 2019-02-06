@@ -1,4 +1,4 @@
-# openEO.R.UDF
+# openeo-r-udf
 
 ## Introduction
 This repository contains a R package for implementing the concept of User-Defined Functions for processing Earth Observation (EO) data in cloud backends. This will allow users to run their custom code written in R to be executed on EO data such as satellite imageries with the help of processing backends conforming to the openEO API. The openEO API is being developed as part of the project ["openEO"](https://github.com/Open-EO).
@@ -20,7 +20,7 @@ These UDF service is being developed for two different languages - Python and R.
 
 ### Architecture
 
-![openEO UDF Architecture](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/openeo_github.png)
+![openEO UDF Architecture](https://github.com/Open-EO/openeo-r-udf/blob/master/data/openeo_github.png)
 
 In the openEO API, the different clients interact with the different backends through the openEO API which acts as a common language understood by both the clients and the backends. The UDF service is not accessible to the clients directly but only through the backends and hence the UDF service's internal operations are abstracted to the user.
 
@@ -45,7 +45,7 @@ install.packages(c("stars", "jsonlite", "plumber", "raster", "base64enc", "zip")
 This package can then be installed using
 
 ```r
-install_github("pramitghosh/openEO.R.UDF")
+install_github("Open-EO/openeo-r-udf")
 ```
 
 ### Using Docker
@@ -68,15 +68,21 @@ In the above command, `-p` re-routes the port where the service will be availabl
 ```bash
 docker pull pramitghosh/openeo.r.udf
 ```
+#### Building it locally
+Once the source files are present on the local machine, running the following command (after navigating to the directory this repository is stored locally) builds a Docker image
+```bash
+docker build -t openeo-r-udf -f DOCKERFILE .
+```
+
 #### For using base64 encoded string
 One of the strategies used involve transmission of data to and from the backend through HTTP POST requests in the form of base64 encoded strings representing a ZIP file containing generic GeoTIFFs embedded in a JSON. Please use the Docker container `pramitghosh/openeo.r.udf:wbin` on Docker Hub to use it. Currently, it is not possible to run it manually without encountering segmentation fault due to a long-standing issue in one of the dependencies of this package.
 
 ## Usage
-This package is intended to be used as part of the openEO API. The package works along with the different backends and are not supposed to accessible directly by the client. However, for testing, please refer to the the Wiki pages of this repository [here](https://github.com/pramitghosh/openEO.R.UDF/wiki).
+This package is intended to be used as part of the openEO API. The package works along with the different backends and are not supposed to accessible directly by the client. However, for testing, please refer to the the Wiki pages of this repository [here](https://github.com/Open-EO/openeo-r-udf/wiki).
 
 ### Strategies
 This R package has implemented 4 strategies for the R UDF service. All of these involve converting the incoming data to a `stars` object before applying the UDF function. An overview of these strategies is shown in the figure below.
-![openEO R UDF strategies](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/strategies.png)
+![openEO R UDF strategies](https://github.com/Open-EO/openeo-r-udf/blob/master/data/strategies.png)
 
 * **Strategy 1** implements the R UDF service as a part of the back-end with data being transmitted as binary GeoTIFF files along with a CSV file acting as a look-up table containing information on which image corresponds to which time, band etc. along with some additional information. These are converted to a `stars` object and exposed to the UDF as a list.
 * **Strategy 2A** implements the R UDF service according to Soeren's JSON schema. Backends send a POST request to a REST endpoint `/udf` with a body containing pixel values in nested JSON arrays. These are converted to a `stars` object and exposed to the UDF as a list.
@@ -91,9 +97,12 @@ Strategy 2B exposes the whole `stars` object to the UDF, but as the EO data has 
 Here are some test results for operations on a timeseries (3 timesteps with a temporal resolution of ~10 days) of spatially subsetted (300*300px) Sentinel-2 images containing 13 bands each illustrating the performance.
 
 Aggregation over bands (using `max()`) and time (using `mean()`) using Strategy 1 and 2A
-![Aggregation operations using Strategy 1 and 2A](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/s1v2a.png)
+![Aggregation operations using Strategy 1 and 2A](https://github.com/Open-EO/openeo-r-udf/blob/master/data/s1v2a.png)
 Reprojection (using `stars::st_warp()`) and Unsupervised Classification (using `RStoolbox::unsuperClass()`) using Strategy 2B and 3
-![Reprojection and Unsupervised Classification using Strategy 2B and 3](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/s2bv3.png)
-![Legend](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/s_legend.jpeg)
+![Reprojection and Unsupervised Classification using Strategy 2B and 3](https://github.com/Open-EO/openeo-r-udf/blob/master/data/s2bv3.png)
+![Legend](https://github.com/Open-EO/openeo-r-udf/blob/master/data/s_legend.jpeg)
 
 Further details regarding these strategies and their implementations may be found on these [slides](https://pramitghosh.github.io/slides/defense_25-1.html) and in [Ghosh et al., 2018](https://www.researchgate.net/publication/330533820_Running_user-defined_functions_in_R_on_Earth_observation_data_in_cloud_back-ends).
+
+### Testing
+Examples of HTTP POST bodies (as JSONs) for strategies 2A, 2B and 3 can be found in [pramitghosh/openeo-r-udf-examples](https://github.com/pramitghosh/openeo-r-udf-examples). Manuals on how to do that is available on the Wiki.
