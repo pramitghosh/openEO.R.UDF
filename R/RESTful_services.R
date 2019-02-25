@@ -544,11 +544,11 @@ run_UDF.binary = function(req)
   {
     # Keep record of files copied for future deletion from current working dir
     data_files = list.files(path = "disk/data", full.names = TRUE, recursive = TRUE)
-    data_files = substr(x = data_files, start = 11, stop = nchar(data_files))
     # Copy files from disk/data to current working dir recursively preserving file permissions
     # e.g. for executable files
-    file.copy(from = "disk/data", to = "/", overwrite = FALSE, recursive = TRUE, copy.mode = TRUE)
+    file.copy(from = data_files, to = "./", overwrite = FALSE, recursive = TRUE, copy.mode = TRUE)
     # file.symlink not used to extend support to more OSs
+    data_files = substr(x = data_files, start = 11, stop = nchar(data_files))
   }
   
   unlink("disk", recursive = TRUE)
