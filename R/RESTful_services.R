@@ -540,12 +540,26 @@ run_UDF.binary = function(req)
   script = gsub("\"", "'", script)
   script = gsub("\r", "", script)
   
+  if(dir.exists("disk/data"))
+  {
+    # Keep record of files copied for future deletion from current working dir
+    data_files = list.files(path = "disk/data", full.names = TRUE, recursive = TRUE)
+    data_files = substr(x = data_files, start = 11, stop = nchar(data_files))
+    # Copy files from disk/data to current working dir recursively preserving file permissions
+    # e.g. for executable files
+    file.copy(from = "disk/data", to = "/", overwrite = FALSE, recursive = TRUE, copy.mode = TRUE)
+    # file.symlink not used to extend support to more OSs
+  }
+  
+  unlink("disk", recursive = TRUE)
+  cat(paste(Sys.time(), "Deleted directory disk\n", sep = " "))
+  
   cat(paste(Sys.time(), "Applying UDF on incoming stars object...\n", sep = " "))
   stars_out = run_script_raw(stars_obj = stars_in, script_text = script)
   cat(paste(Sys.time(), "Output stars object created\n", sep = " "))
   
-  unlink("disk", recursive = TRUE)
-  cat(paste(Sys.time(), "Deleted directory disk\n", sep = " "))
+  unlink(x = data_files, recursive = TRUE, force = TRUE)
+  cat(paste(Sys.time(), "Deleted data files\n", sep = " "))
 
   time_only = FALSE
   band_only = FALSE
