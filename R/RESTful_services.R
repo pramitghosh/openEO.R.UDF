@@ -540,6 +540,7 @@ run_UDF.binary = function(req)
   script = gsub("\"", "'", script)
   script = gsub("\r", "", script)
   
+  data_flag = FALSE
   if(dir.exists("disk/data"))
   {
     # Keep record of files copied for future deletion from current working dir
@@ -549,6 +550,7 @@ run_UDF.binary = function(req)
     file.copy(from = data_files, to = "./", overwrite = FALSE, recursive = TRUE, copy.mode = TRUE)
     # file.symlink not used to extend support to more OSs
     data_files = substr(x = data_files, start = 11, stop = nchar(data_files))
+    if(!is.null(data_files)) data_flag = TRUE
   }
   
   unlink("disk", recursive = TRUE)
@@ -558,9 +560,12 @@ run_UDF.binary = function(req)
   stars_out = run_script_raw(stars_obj = stars_in, script_text = script)
   cat(paste(Sys.time(), "Output stars object created\n", sep = " "))
   
-  unlink(x = data_files, recursive = TRUE, force = TRUE)
-  cat(paste(Sys.time(), "Deleted data files\n", sep = " "))
-
+  if(data_flag)
+  {
+    unlink(x = data_files, recursive = TRUE, force = TRUE)
+    cat(paste(Sys.time(), "Deleted data files\n", sep = " "))
+  }
+  
   time_only = FALSE
   band_only = FALSE
   
