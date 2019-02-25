@@ -534,8 +534,6 @@ run_UDF.binary = function(req)
   legend$timestamp = as.POSIXct(legend$timestamp)
   stars_in = bin_read_legend(legend)
   cat(paste(Sys.time(), "Creating stars object from incoming data\n", sep = " "))
-  unlink("disk", recursive = TRUE)
-  cat(paste(Sys.time(), "Deleted directory disk\n", sep = " "))
 
   # script = json2script(post_body$code)
   script = post_body$code$code$source
@@ -545,6 +543,9 @@ run_UDF.binary = function(req)
   cat(paste(Sys.time(), "Applying UDF on incoming stars object...\n", sep = " "))
   stars_out = run_script_raw(stars_obj = stars_in, script_text = script)
   cat(paste(Sys.time(), "Output stars object created\n", sep = " "))
+  
+  unlink("disk", recursive = TRUE)
+  cat(paste(Sys.time(), "Deleted directory disk\n", sep = " "))
 
   time_only = FALSE
   band_only = FALSE
