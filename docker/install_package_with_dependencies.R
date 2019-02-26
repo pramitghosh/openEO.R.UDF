@@ -10,3 +10,4 @@ install.packages("zip", dependencies = TRUE)
 
 install_version("rgeos", version = "0.3-28")
 install.packages("RStoolbox", dependencies = TRUE)
+install.packages("Rcpp", dependencies = TRUE)
