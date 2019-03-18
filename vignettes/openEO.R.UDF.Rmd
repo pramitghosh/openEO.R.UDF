@@ -1,0 +1,44 @@
+---
+title: "Getting started with openEO.R.UDF"
+author: "Pramit Ghosh"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.path = "man/figures/",
+  comment = "#>"
+)
+```
+
+## Welcome to the openEO R UDF wiki
+This wiki is meant to provide the background and additional information on how to use this repository.
+
+### Background
+This repository is meant to be part of the H2020 funded project [openEO](http://openeo.org). The objective of this project is to develop an uniform API to allow processing of Earth Observation (EO) data in cloud-based processing backends from various client nodes. In this API framework, User-Defined Functions (UDFs) is a concept that would allow users to run their own scripts on EO data in these cloud backends.
+
+### User-Defined Functions
+The UDFs are implemented by developing an UDF API which work hand-in-hand with the openEO core API. The main idea is that there are UDF (web-) services which could be used by the backends as required. The typical workflow is:
+
+1. The user uploads his/her script from the client nodes to the backends along with the process graph
+2. The backend executes the process graph and encounters the UDF in the process graph
+3. The backend seeks the services of the UDF service to execute the user's script and sends the script and intermediate data to the service through appropriate means (file-based service, RESTful web-service etc.)
+4. The UDF service executes the script on the data and sends the result back to the backend.
+5. The backend receives the data and continues executing the process graph until the final result is obtained.
+6. The backend sends the completed result to the user's client node.
+
+These UDF service is being developed for two different languages - Python and R. This repository concerns with the implementation using R.
+
+### Architecture
+
+```{r echo=FALSE, out.width="700px"}
+knitr::include_graphics("../man/figures/openeo_github.png")
+```
+
+In the openEO API, the different clients interact with the different backends through the openEO API which acts as a common language understood by both the clients and the backends. The UDF service is not accessible to the clients directly but only through the backends and hence the UDF service's internal operations are abstracted to the user.

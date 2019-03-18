@@ -1,0 +1,92 @@
+---
+title: "RESTful UDF service using JSON arrays (Strategies 2A & 2B)"
+author: "Pramit Ghosh"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  fig.path = "man/figures/",
+  comment = "#>"
+)
+```
+
+# R UDF service using JSON arrays
+The web-based RESTful R UDF service has two implementation strategies both of which use nested JSON arrays to transmit EO data to and from it. The backend converts the EO data to JSON arrays containing the pixel values and transmits them using HTTP POST requests containing the JSON as its body. The response body also contains EO data in its body.
+
+## Overview of Strategy
+```{r echo=FALSE, out.width="700px"}
+knitr::include_graphics("../man/figures/strategy_2.png")
+```
+
+## JSON structure
+The JSON schema is almost similar to the one developed for the Python implementation of UDFs (Open-EO/openeo-udf) with minor variations. Overviews are shown for strategies 2A and 2B.
+
+```json
+{
+    "code":{
+              "language": "R",
+              "source": "function(obj){\r\n max(obj) \r\n",
+              "dim_mod": "time"
+           },
+    "data":{
+              "proj": "+proj=utm +zone=34 +south +datum=WGS84 +units=m +no_defs +ellps=WGS84 +towgs84=0,0,0",
+              "raster_collection_tiles": [
+              {
+                  "id": "test1",
+                  "wavelength": 1,
+                  "extent": {
+                               "north": 7900000,
+                               "south": 7897000,
+                               "west": 699960,
+                               "east": 702960,
+                               "height": 10,
+                               "width": 10
+                            },
+              "end_times": [
+                "2017-05-11T08:16:11 CEST",
+                "2017-05-21T08:20:11 CEST",
+                "2017-05-31T08:16:11 CEST"
+              ],
+              "start_times": [
+                "2017-05-01T08:16:11 CEST",
+                "2017-05-11T08:20:11 CEST",
+                "2017-05-21T08:16:11 CEST"
+              ],  
+              "data": [
+                          [
+                              [...], [...], ...
+                          ]
+                      ]
+              },
+              {
+                  "id": "test1",
+                  "wavelength": 2,
+                  ...
+              }
+              ]
+         }
+}
+```
+Some important changes are the inclusion of `dim_mod` in the section `code` which tells the UDF service which dimension needs to be changed in common reducing operations. So, in the example above, this would perform aggregation using `max()` over time. So, it will find the maximum value in each pixel for each of the bands over all the timesteps.
+
+## Testing
+
+In order to test these endpoints, a HTTP POST request needs to be sent to the appropriate endpoint containing a body compliant with the proposed schema. Any client supporting HTTP requests could be used. Using curl, an example POST request would look similar to
+
+```bash
+#for Strategy 2A POSTing request to endpoint /udf
+curl -H "application/json" -d @"udf_file.json" http://127.0.0.1:5384/udf
+
+#for Strategy 2B POSTing request to endpoint /udf/raw
+curl -H "application/json" -d @"udf_raw_file.json" http://127.0.0.1:5384/udf/raw
+```
+In these examples, the `-d` flag can be used to point to the location of the appropriate JSON file on disk which would be used as the body to the POST request. Please take note of the different endpoints appended to the <URL>:<port> (http://127.0.0.1 and 5384 respectively) in the example above. Of course, any server hosting the service could be used.
+
+          
