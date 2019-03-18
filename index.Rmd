@@ -1,7 +1,7 @@
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  fig.path = "man/figures/",
+  fig.path = "reference/figures/",
   comment = "#>"
 )
 ```
@@ -27,7 +27,7 @@ These UDF service is being developed for two different languages - Python and R.
 
 ### Architecture
 ```{r echo=FALSE, out.width="700px"}
-knitr::include_graphics("man/figures/openeo_github.png")
+knitr::include_graphics("reference/figures/openeo_github.png")
 ```
 
 In the openEO API, the different clients interact with the different backends through the openEO API which acts as a common language understood by both the clients and the backends. The UDF service is not accessible to the clients directly but only through the backends and hence the UDF service's internal operations are abstracted to the user.
@@ -92,7 +92,7 @@ This package is intended to be used as part of the openEO API. The package works
 This R package has implemented 4 strategies for the R UDF service. All of these involve converting the incoming data to a `stars` object before applying the UDF function. An overview of these strategies is shown in the figure below.
 
 ```{r echo=FALSE, out.width="700px"}
-knitr::include_graphics("man/figures/strategies.png")
+knitr::include_graphics("reference/figures/strategies.png")
 ```
 
 * **Strategy 1** implements the R UDF service as a part of the back-end with data being transmitted as binary GeoTIFF files along with a CSV file acting as a look-up table containing information on which image corresponds to which time, band etc. along with some additional information. These are converted to a `stars` object and exposed to the UDF as a list.
@@ -109,15 +109,15 @@ Here are some test results for operations on a timeseries (3 timesteps with a te
 
 Aggregation over bands (using `max()`) and time (using `mean()`) using Strategy 1 and 2A
 ```{r echo=FALSE, out.width="700px"}
-knitr::include_graphics("man/figures/s1v2a.png")
+knitr::include_graphics("reference/figures/s1v2a.png")
 ```
 
 Reprojection (using `stars::st_warp()`) and Unsupervised Classification (using `RStoolbox::unsuperClass()`) using Strategy 2B and 3
 ```{r echo=FALSE, out.width="700px"}
-knitr::include_graphics("man/figures/s2bv3.png")
+knitr::include_graphics("reference/figures/s2bv3.png")
 ```
 ```{r echo=FALSE, out.width="200px"}
-knitr::include_graphics("man/figures/s_legend.jpeg")
+knitr::include_graphics("reference/figures/s_legend.jpeg")
 ```
 
 Further details regarding these strategies and their implementations may be found on these [slides](https://pramitghosh.github.io/slides/defense_25-1.html) and in [Ghosh et al., 2018](https://www.researchgate.net/publication/330533820_Running_user-defined_functions_in_R_on_Earth_observation_data_in_cloud_back-ends).
