@@ -1,9 +1,0 @@
-pandoc: 1.19.2.1
-pkgdown: 1.3.0.9000
-pkgdown_sha: 0b2c27d41b869ac31b6a46815940f55b12f6171f
-articles:
-  file-based: file-based.html
-  openEO.R.UDF: openEO.R.UDF.html
-  web-based_JSON: web-based_JSON.html
-  web-based_base64: web-based_base64.html
-
