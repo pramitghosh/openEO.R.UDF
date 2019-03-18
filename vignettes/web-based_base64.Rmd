@@ -1,5 +1,5 @@
 ---
-title: "RESTful UDF service using base64 encoded string"
+title: "RESTful UDF service using base64 encoded string (Strategy 3)"
 author: "Pramit Ghosh"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette

@@ -9,8 +9,8 @@ Maintainer: Pramit Ghosh <pramitghosh@uni-muenster.de>
 Description: Reads Earth Observation (EO) data to a stars object, applies users' custom function on it,
     and computes the results. This package is meant to be used by cloud back-ends compliant with the openEO API
     for user-defined functions (UDFs) and is interfaced with the help of file-based implementations and RESTful web services.
-URL: https://github.com/pramitghosh/openEO.R.UDF
-BugReports: https://github.com/pramitghosh/openEO.R.UDF/issues
+URL: https://github.com/Open-EO/openeo-r-udf
+BugReports: https://github.com/Open-EO/openeo-r-udf/issues
 License: Apache License
 Encoding: UTF-8
 LazyData: true
