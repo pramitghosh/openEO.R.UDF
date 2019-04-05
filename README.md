@@ -98,11 +98,12 @@ Here are some test results for operations on a timeseries (3 timesteps with a te
 
 Aggregation over bands (using `max()`) and time (using `mean()`) using Strategy 1 and 2A
 ![Aggregation operations using Strategy 1 and 2A](https://github.com/Open-EO/openeo-r-udf/blob/master/data/s1v2a.png)
-Reprojection (using `stars::st_warp()`) and Unsupervised Classification (using `RStoolbox::unsuperClass()`) using Strategy 2B and 3
-![Reprojection and Unsupervised Classification using Strategy 2B and 3](https://github.com/Open-EO/openeo-r-udf/blob/master/data/s2bv3.png)
-![Legend](https://github.com/Open-EO/openeo-r-udf/blob/master/data/s_legend.jpeg)
+Calculation of NDVI, CRS transformation (using `stars::st_warp()`) and Unsupervised Classification (using `RStoolbox::unsuperClass()`) using Strategy 2B
+![Calculation of NDVI, Reprojection and Unsupervised Classification using Strategy 2B](https://github.com/Open-EO/openeo-r-udf/blob/master/data/s2b.png)
+Calculation of NDVI, CRS transformation (using `stars::st_warp()`) and Unsupervised Classification (using `RStoolbox::unsuperClass()`) using Strategy 3
+![Calculation of NDVI, Reprojection and Unsupervised Classification using Strategy 3](https://github.com/Open-EO/openeo-r-udf/blob/master/data/s3.png)
 
-Further details regarding these strategies and their implementations may be found on these [slides](https://pramitghosh.github.io/slides/defense_25-1.html) and in [Ghosh et al., 2018](https://www.researchgate.net/publication/330533820_Running_user-defined_functions_in_R_on_Earth_observation_data_in_cloud_back-ends).
+Further details regarding these strategies and their implementations may be found on these [slides](https://pramitghosh.github.io/slides/defense_25-1.html) and in [Ghosh et al. (2018)](https://www.researchgate.net/publication/330533820_Running_user-defined_functions_in_R_on_Earth_observation_data_in_cloud_back-ends).
 
 ### Testing
 Examples of HTTP POST bodies (as JSONs) for strategies 2A, 2B and 3 can be found in [pramitghosh/openeo-r-udf-examples](https://github.com/pramitghosh/openeo-r-udf-examples). Manuals on how to do that is available on the Wiki.
