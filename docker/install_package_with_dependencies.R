@@ -4,7 +4,7 @@ install.packages("devtools",dependencies=TRUE)
 library(devtools)
 
 install.packages("plumber",dependencies=TRUE)
-install.packages("stars", dependencies = TRUE)
+install_version("stars", version = "0.2-0")
 install.packages("base64enc", dependencies = TRUE)
 install.packages("zip", dependencies = TRUE)
 

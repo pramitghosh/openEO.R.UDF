@@ -26,7 +26,7 @@ The UDFs are implemented by developing an UDF API which work hand-in-hand with t
 These UDF service is being developed for two different languages - Python and R. This repository concerns with the implementation using R.
 
 ### Architecture
-```{r echo=FALSE, out.width="700px"}
+```{r echo=FALSE, out.width="1000px"}
 knitr::include_graphics("reference/figures/openeo_github.png")
 ```
 
@@ -91,7 +91,7 @@ This package is intended to be used as part of the openEO API. The package works
 ### Strategies
 This R package has implemented 4 strategies for the R UDF service. All of these involve converting the incoming data to a `stars` object before applying the UDF function. An overview of these strategies is shown in the figure below.
 
-```{r echo=FALSE, out.width="700px"}
+```{r echo=FALSE, out.width="1000px"}
 knitr::include_graphics("reference/figures/strategies.png")
 ```
 
@@ -108,16 +108,20 @@ Strategy 2B exposes the whole `stars` object to the UDF, but as the EO data has 
 Here are some test results for operations on a timeseries (3 timesteps with a temporal resolution of ~10 days) of spatially subsetted (300*300px) Sentinel-2 images containing 13 bands each illustrating the performance.
 
 Aggregation over bands (using `max()`) and time (using `mean()`) using Strategy 1 and 2A
-```{r echo=FALSE, out.width="700px"}
+```{r echo=FALSE, out.width="1000px"}
 knitr::include_graphics("reference/figures/s1v2a.png")
 ```
 
-Reprojection (using `stars::st_warp()`) and Unsupervised Classification (using `RStoolbox::unsuperClass()`) using Strategy 2B and 3
-```{r echo=FALSE, out.width="700px"}
-knitr::include_graphics("reference/figures/s2bv3.png")
+Calculation of NDVI, Reprojection (using `stars::st_warp()`) and Unsupervised Classification (using `RStoolbox::unsuperClass()`) using Strategy 2B
+
+```{r echo=FALSE, out.width="1000px"}
+knitr::include_graphics("reference/figures/s2b.png")
 ```
-```{r echo=FALSE, out.width="200px"}
-knitr::include_graphics("reference/figures/s_legend.jpeg")
+
+Calculation of NDVI, Reprojection (using `stars::st_warp()`) and Unsupervised Classification (using `RStoolbox::unsuperClass()`) using Strategy 3
+
+```{r echo=FALSE, out.width="1000px"}
+knitr::include_graphics("reference/figures/s3.png")
 ```
 
 Further details regarding these strategies and their implementations may be found on these [slides](https://pramitghosh.github.io/slides/defense_25-1.html) and in [Ghosh et al., 2018](https://www.researchgate.net/publication/330533820_Running_user-defined_functions_in_R_on_Earth_observation_data_in_cloud_back-ends).
