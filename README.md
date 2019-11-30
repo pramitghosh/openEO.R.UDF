@@ -20,7 +20,7 @@ These UDF service is being developed for two different languages - Python and R.
 
 ### Architecture
 
-![openEO UDF Architecture](https://github.com/Open-EO/openeo-r-udf/blob/master/data/openeo_github.png)
+![openEO UDF Architecture](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/openeo_github.png)
 
 In the openEO API, the different clients interact with the different backends through the openEO API which acts as a common language understood by both the clients and the backends. The UDF service is not accessible to the clients directly but only through the backends and hence the UDF service's internal operations are abstracted to the user.
 
@@ -82,7 +82,7 @@ This package is intended to be used as part of the openEO API. The package works
 
 ### Strategies
 This R package has implemented 4 strategies for the R UDF service. All of these involve converting the incoming data to a `stars` object before applying the UDF function. An overview of these strategies is shown in the figure below.
-![openEO R UDF strategies](https://github.com/Open-EO/openeo-r-udf/blob/master/data/strategies.png)
+![openEO R UDF strategies](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/strategies.png)
 
 * **Strategy 1** implements the R UDF service as a part of the back-end with data being transmitted as binary GeoTIFF files along with a CSV file acting as a look-up table containing information on which image corresponds to which time, band etc. along with some additional information. These are converted to a `stars` object and exposed to the UDF as a list.
 * **Strategy 2A** implements the R UDF service according to Soeren's JSON schema. Backends send a POST request to a REST endpoint `/udf` with a body containing pixel values in nested JSON arrays. These are converted to a `stars` object and exposed to the UDF as a list.
@@ -97,11 +97,11 @@ Strategy 2B exposes the whole `stars` object to the UDF, but as the EO data has 
 Here are some test results for operations on a timeseries (3 timesteps with a temporal resolution of ~10 days) of spatially subsetted (300*300px) Sentinel-2 images containing 13 bands each illustrating the performance.
 
 Aggregation over bands (using `max()`) and time (using `mean()`) using Strategy 1 and 2A
-![Aggregation operations using Strategy 1 and 2A](https://github.com/Open-EO/openeo-r-udf/blob/master/data/s1v2a.png)
+![Aggregation operations using Strategy 1 and 2A](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/s1v2a.png)
 Calculation of NDVI, CRS transformation (using `stars::st_warp()`) and Unsupervised Classification (using `RStoolbox::unsuperClass()`) using Strategy 2B
-![Calculation of NDVI, Reprojection and Unsupervised Classification using Strategy 2B](https://github.com/Open-EO/openeo-r-udf/blob/master/data/s2b.png)
+![Calculation of NDVI, Reprojection and Unsupervised Classification using Strategy 2B](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/s2b.png)
 Calculation of NDVI, CRS transformation (using `stars::st_warp()`) and Unsupervised Classification (using `RStoolbox::unsuperClass()`) using Strategy 3
-![Calculation of NDVI, Reprojection and Unsupervised Classification using Strategy 3](https://github.com/Open-EO/openeo-r-udf/blob/master/data/s3.png)
+![Calculation of NDVI, Reprojection and Unsupervised Classification using Strategy 3](https://github.com/pramitghosh/openEO.R.UDF/blob/master/data/s3.png)
 
 Further details regarding these strategies and their implementations may be found on these [slides](https://pramitghosh.github.io/slides/defense_25-1.html) and in [Ghosh et al. (2018)](https://www.researchgate.net/publication/330533820_Running_user-defined_functions_in_R_on_Earth_observation_data_in_cloud_back-ends).
 
